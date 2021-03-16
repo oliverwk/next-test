@@ -8,6 +8,9 @@
 # creds for box
 /lib/config.json
 
+.env
+package-lock.json
+
 # testing
 /coverage
 
