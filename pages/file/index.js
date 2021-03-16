@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 
 export default function FirstFile() {
-  //boxGetFile()
+  //TODO: make a search tool
   return (
     <>
       <Head>

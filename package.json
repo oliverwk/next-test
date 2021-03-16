@@ -1,12 +1,12 @@
 {
-  "name": "learn-starter",
+  "name": "next-box",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "export":"next export -o dist",
-    "start": "next start /Users/MWK/Desktop/OLE/boxes/reactive-box/",
+    "start": "next start .",
     "help":"next start --help"
   },
   "dependencies": {
