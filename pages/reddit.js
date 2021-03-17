@@ -101,50 +101,51 @@ function FileItem(props) {
   </Col>
   );
 }
+const FileList = (props) => {
+  console.log("Props:", props);
+  let mtp = props.Rjson.filter(data => {
+    return data.data.stickied !== true;
+  });
+  let rows = array_chunk(mtp.slice(0, -1), 4);
+  return (
+    <Container fluid>
+      <br />
+      <h1>The subreddit: <kbd>r/{rReddit}</kbd></h1>
+      <br />
+      {
+        rows.map((row) => (
+          <Row>
+            {
+              row.map((data) => (
+                <FileItem key={data.data.permalink.toString()} value={data} /> // Mischien nog 'created' doen
+              ))
+            }
+          </Row>
+        ))
+      }
+    </Container>
+  );
+}
 
 //TODO:export async function getStaticProps() {
 export async function getServerSideProps({ query }) {
   if (Object.keys(query).length != 0) { console.log(`Er is een query met ${Object.keys(query)[0]}: ${query[Object.keys(query)[0]]}`) }
   rReddit = (Object.keys(query).length != 0) ? query[Object.keys(query)[0]] : 'gonemild';
   console.time("Making api call");
-  let data = await fetch(`https://api.reddit.com/r/${rReddit}/random`, { headers: { 'User-Agent': 'Mozilla/5.1 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.3 Safari/604.1.15'}});
-  if (!data.ok) {
-  		console.log(data.statusCode);
-  		console.log(data.statusText);
+  let Fdata = await fetch(`https://api.reddit.com/r/${rReddit}`, { headers: { 'User-Agent': 'Mozilla/5.1 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.3 Safari/604.1.15'}});
+  if (!Fdata.ok) {
+    console.log(Fdata.statusCode);
+    console.log(Fdata.statusText);
   }
-  data = await data.json();
-  data = data["data"];
+  let Jdata = await Fdata.json();
   console.timeEnd("Making api call");
+  let data = Jdata["data"];
+  console.log(JSON.stringify(Fdata));
   return {
     props: { Home: data },
   };
 };
 
-const FileList = (props) => {
-    console.log("Props:", props);
-    let mtp = props.Rjson.filter(data => {
-        return data.data.stickied !== true;
-     });
-    let rows = array_chunk(mtp.slice(0, -1), 4);
-  return (
-    <Container fluid>
-    <br/>
-    <h1>The subreddit: <kbd>r/{rReddit}</kbd></h1>
-    <br/>
-     {
-       rows.map((row) => (
-         <Row>
-         {
-        row.map((data) => (
-            <FileItem key={data.data.url.toString()} value={data} />
-           ))
-         }
-         </Row>
-       ))
-     }
-     </Container>
-   );
-}
 export default function Home(props) {
   let RList = props.Home.children;
   return (

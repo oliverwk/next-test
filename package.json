@@ -1,13 +1,13 @@
 {
   "name": "next-box",
-  "version": "0.1.0",
+  "version": "2.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "export": "next export -o dist",
     "start": "next start .",
-    "help": "next start --help"
+    "help": "next --help"
   },
   "dependencies": {
     "bootstrap": "^4.6.0",
