@@ -29,13 +29,14 @@ function isVideo(item) {
   } catch (e) {
     console.log(e);
     try {
-      return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
+      return <Card.Img variant="top" src={item.url.replace("&amp;", "&")} alt={item.alt} />;
     } catch (e) { 
       console.log(e);
       return <Card.Img variant="top" src={item.url} alt={item.alt} />;
     }
   }
 }
+
 function FileItem(props) {
   console.log(props.value);
   let item = props.value.data;
@@ -101,19 +102,18 @@ function FileItem(props) {
   );
 }
 
-//export async function getStaticProps() {
+//TODO:export async function getStaticProps() {
 export async function getServerSideProps({ query }) {
   if (Object.keys(query).length != 0) { console.log(`Er is een query met ${Object.keys(query)[0]}: ${query[Object.keys(query)[0]]}`) }
   rReddit = (Object.keys(query).length != 0) ? query[Object.keys(query)[0]] : 'gonemild';
   console.time("Making api call");
-  let data = await fetch(`https://api.reddit.com/r/${rReddit}`, { headers: { 'User-Agent': 'Mozilla/5.1 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.3 Safari/604.1.15'}});
+  let data = await fetch(`https://api.reddit.com/r/${rReddit}/random`, { headers: { 'User-Agent': 'Mozilla/5.1 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.3 Safari/604.1.15'}});
   if (!data.ok) {
   		console.log(data.statusCode);
   		console.log(data.statusText);
   }
   data = await data.json();
   data = data["data"];
-  console.log(data["children"][6]["data"]["url_overridden_by_dest"]);
   console.timeEnd("Making api call");
   return {
     props: { Home: data },
