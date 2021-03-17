@@ -1,17 +1,16 @@
 {
   "name": "next-box",
-  "version": "0.1.0",
+  "version": "2.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "export": "next export -o dist",
     "start": "next start .",
-    "help": "next start --help"
+    "help": "next --help"
   },
   "dependencies": {
     "bootstrap": "^4.6.0",
-    "dotenv": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
     "next": "^10.0.0",
     "react": "17.0.1",
