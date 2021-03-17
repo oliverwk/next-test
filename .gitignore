@@ -9,6 +9,7 @@
 /lib/config.json
 
 .env
+.env.key
 package-lock.json
 
 # testing
