@@ -27,7 +27,11 @@ function isVideo(item) {
       return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
     }
   } catch (e) {
+    try {
       return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
+    } catch (e) { 
+      return <Card.Img variant="top" src={item.url} alt={item.alt} />;
+    }
   }
 }
 function FileItem(props) {
