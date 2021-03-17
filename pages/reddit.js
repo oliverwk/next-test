@@ -3,7 +3,6 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
-import { boxGetFolder } from '../lib/boxes.js';
 import Container from "react-bootstrap/Container";
 let rReddit = "GoneMild";
 
@@ -18,7 +17,6 @@ function array_chunk(arr, size) {
 function isVideo(item) {
   try {
     if (item.preview.hasOwnProperty('reddit_video_preview')) {
-      //In video doen als niet werkt src={item.preview.reddit_video_preview.hls_url} autoPlay als autoplay wilt
       return <video className="card-img-top" controls poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} height={item.preview.reddit_video_preview.width} width={item.preview.reddit_video_preview.height}>
       <source src={item.preview.reddit_video_preview.hls_url} />
       <source src={item.preview.reddit_video_preview.dash_url} />
