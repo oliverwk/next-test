@@ -32,7 +32,7 @@ function isVideo(item) {
       return <Card.Img variant="top" src={item.url.replace("&amp;", "&")} alt={item.alt} />;
     } catch (e) { 
       console.log(e);
-      return <Card.Img variant="top" src={item.url} alt={item.alt} />;
+      return <Card.Img variant="top" src={item.url.replace("amp;", "")} alt={item.alt} />;
     }
   }
 }
