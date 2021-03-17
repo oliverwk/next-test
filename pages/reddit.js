@@ -94,7 +94,7 @@ function FileItem(props) {
   {isVideo(item)}
     <Card.Body>
       <Card.Title>{item.author}</Card.Title>
-      <Card.Text>{item.title.replaceAll("&lt;","<").replaceAll("&amp;","&")}</Card.Text>
+      <Card.Text>{item.title}</Card.Text>
       <Button href={item.permalink} variant="primary">View the Image on reddit</Button>
     </Card.Body>
   </Col>
