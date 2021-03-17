@@ -27,9 +27,11 @@ function isVideo(item) {
       return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
     }
   } catch (e) {
+    console.log(e);
     try {
       return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
     } catch (e) { 
+      console.log(e);
       return <Card.Img variant="top" src={item.url} alt={item.alt} />;
     }
   }
@@ -37,7 +39,10 @@ function isVideo(item) {
 function FileItem(props) {
   console.log(props.value);
   let item = props.value.data;
-  console.log("Title Orginal:"+item.title);
+  if (!item.title) {
+    item.title = "Geen title"
+  }
+  console.log("Title Orginal:", item.title);
   if (item.title.includes("[")) {
   	let titleP1 = item.title.slice(item.title.indexOf("]")+1, item.title.length)
   	let titleP2 = item.title.slice(0, Math.abs(item.title.indexOf("[")));
