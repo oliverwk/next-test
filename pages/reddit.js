@@ -18,7 +18,7 @@ function array_chunk(arr, size) {
 function isVideo(item) {
   try {
     if (item.preview.hasOwnProperty('reddit_video_preview')) {
-      // in video doen als niet werkt src={item.preview.reddit_video_preview.hls_url} autoPlay als autoplay wilt
+      //In video doen als niet werkt src={item.preview.reddit_video_preview.hls_url} autoPlay als autoplay wilt
       return <video className="card-img-top" controls poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} height={item.preview.reddit_video_preview.width} width={item.preview.reddit_video_preview.height}>
       <source src={item.preview.reddit_video_preview.hls_url} />
       <source src={item.preview.reddit_video_preview.dash_url} />
@@ -78,7 +78,12 @@ function FileItem(props) {
   } else {
     item.permalink = item.permalink.includes('https://reddit.com') ? item.permalink : "https://reddit.com"+item.permalink
   }
-
+  if (!item.url) {
+    item.url = "#";
+  }
+  if (!item.title) {
+    item.title = "No title"
+  }
   return (
   <Col sm>
   {isVideo(item)}
