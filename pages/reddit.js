@@ -39,30 +39,28 @@ function isVideo(item) {
 function FileItem(props) {
   console.log(props.value);
   let item = props.value.data;
-  if (!item.title) {
-    item.title = "Geen title"
-  }
   console.log("Title Orginal:", item.title);
-  if (item.title.includes("[")) {
-  	let titleP1 = item.title.slice(item.title.indexOf("]")+1, item.title.length)
-  	let titleP2 = item.title.slice(0, Math.abs(item.title.indexOf("[")));
-  	item.title  = titleP2+titleP1;
-	console.log("Title Editedd:"+titleP2+titleP1);
-  } else if (item.title.includes("(")) {
-	  let titleP1 = item.title.slice(item.title.indexOf(")")+1, item.title.length)
-    let titleP2 = item.title.slice(0, Math.abs(item.title.indexOf("(")));
-    item.title  = titleP2+titleP1;
-    item.alt    = titleP2+titleP1;
-	  console.log("Title Editedd:"+titleP2+titleP1);
-  } else {
-	  console.log("Nothing in the title");
+  if (!item.title) {
+    item.title = "Geen titel"
+  } else { 
+    if (item.title.includes("[")) {
+      let titleP1 = item.title.slice(item.title.indexOf("]")+1, item.title.length)
+      let titleP2 = item.title.slice(0, Math.abs(item.title.indexOf("[")));
+      item.title  = titleP2+titleP1;
+    console.log("Title Editedd:"+titleP2+titleP1);
+    } else if (item.title.includes("(")) {
+      let titleP1 = item.title.slice(item.title.indexOf(")")+1, item.title.length)
+      let titleP2 = item.title.slice(0, Math.abs(item.title.indexOf("(")));
+      item.title  = titleP2+titleP1;
+      item.alt    = titleP2+titleP1;
+      console.log("Title Editedd:"+titleP2+titleP1);
+    } else {
+      console.log("Nothing in the title");
+    }
   }
-
-  try {
+  if (item.preview.images[0].source.url) {
     // TEMP: ALS Afbeeldingen niet werken console.log("item.preview.images[0]:", item.preview);
     item.url = item.preview.images[0].source.url;
-  } catch (e) {
-    let idk = true;
   }
 
   /* FIXME: als thumbnails van andre websites niet meer werken dan dit gebruiken
