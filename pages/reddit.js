@@ -79,10 +79,10 @@ function FileItem(props) {
       item.permalink = item.preview.reddit_video_preview.fallback_url
       item.url = item.preview.images[0].source.url
     } else {
-      item.permalink = item.permalink.includes('https://reddit.com') ? item.permalink : "https://reddit.com"+item.permalink
+      item.permalink = item.permalink.startsWith('https://reddit.com') ? item.permalink : `https://reddit.com${item.permalink}`
     }
   } else {
-    item.permalink = item.permalink.includes('https://reddit.com') ? item.permalink : "https://reddit.com"+item.permalink
+    item.permalink = item.permalink.startsWith('https://reddit.com') ? item.permalink : `https://reddit.com${item.permalink}`
   }
   if (!item.url) {
     item.url = "#";
