@@ -25,7 +25,7 @@ function FileItem(props) {
   let ndate = new Date(parseInt(items.name)*1000);
   return (
      <Col md="4">
-     <Card.Img variant="top" src={items.download_url} alt={items.name} />
+      <Card.Img title={items.name} variant="top" src={items.download_url} alt={items.name} id={items.id} />
       <Card.Body>
         <Card.Title>{ndate != "Invalid Date" ?  ndate.toLocaleString("nl-nl") : items.name}</Card.Title>
           <Link href={ "/file/" + items.id }>
