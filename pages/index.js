@@ -10,7 +10,7 @@ function FileItem(props) {
   return (
     <div className="col-sm-4">
      <li className="card">
-       <img src={items.download_url} alt={items.name} className="card-img-top" style={{padding: 10 + 'px'}} />
+        <img src={items.download_url} alt={items.name} className="card-img-top" style={{ padding: 10 + 'px' }} id={items.id} />
        <div className="card-body">
          <h5 className="card-title">{items.name}</h5>
          <a href={"https://app.box.com/file/"+items.id} className="btn btn-primary">View the Image</a>

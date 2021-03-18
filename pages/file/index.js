@@ -8,12 +8,15 @@ const margin = "2";
 function Bar() {
   let handleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      console.log("New url", `/file/${ e.target.value }`);
-      window.location = `/file/${e.target.value}`;
+      if (e.target.value.length != 12) {
+        alert("It's need to be longer then 12 chars")
+      } else {
+        window.location = `/file/${e.target.value}`;
+      } 
     }
   }
   return (
-    <input onKeyDown={handleKeyDown} style={{ position: "relative", margin: margin + "rem" }} type="text" autofocus spellcheck="false" title="Put you'r id here" autocapitalize="off" className={bars.bar}></input>
+    <input onKeyDown={handleKeyDown} style={{ position: "relative", margin: margin + "rem" }} type="text" autoFocus spellCheck="false" title="Put you'r id here" autoCapitalize="off" className={bars.bar}></input>
   );
 }
 export default function FirstFile() {

@@ -15,7 +15,7 @@ export default function file({ file }) {
             <title>{file.id}</title>
         </Head>
             <main className={styles.main}>
-                <img className={styles.img} src={file.download_url} width="500px" />
+                <img title={file.id} className={styles.img} src={file.download_url} width="500px" id={file.id}/>
                 <div>
                     <h1 className={styles.title}>
                         { ndate != "Invalid Date" ? ndate.toLocaleString("nl-nl") : file.name }
