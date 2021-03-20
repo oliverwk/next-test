@@ -4,7 +4,7 @@ import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
-let rReddit = "GoneMild";
+let rReddit;
 
 function array_chunk(arr, size) {
   let result = [];
@@ -17,12 +17,13 @@ function array_chunk(arr, size) {
 function isVideo(item) {
   try {
     if (item.preview.hasOwnProperty('reddit_video_preview')) {
-      return <video className="card-img-top" controls poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} height={item.preview.reddit_video_preview.width} width={item.preview.reddit_video_preview.height}>
-      <source src={item.preview.reddit_video_preview.hls_url} />
-      <source src={item.preview.reddit_video_preview.dash_url} />
-      <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
-      Your browser does not support the video tag.
-    </video>;
+//      return <video className="card-img-top" controls  preload="auto" loop poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} width={item.preview.reddit_video_preview.width} height={item.preview.reddit_video_preview.height}>
+      return <video className="card-img-top" controls  preload="auto" loop poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")}>
+        <source src={item.preview.reddit_video_preview.hls_url} />
+        <source src={item.preview.reddit_video_preview.dash_url} />
+        <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
+        Your browser does not support the video tag.
+      </video>;
     } else {
       return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
     }
@@ -30,7 +31,7 @@ function isVideo(item) {
     console.log(e);
     try {
       return <Card.Img variant="top" src={item.url.replace("&amp;", "&")} alt={item.alt} />;
-    } catch (e) { 
+    } catch (e) {
       console.log(e);
       return <Card.Img variant="top" src={item.url.replace("amp;", "")} alt={item.alt} />;
     }
@@ -38,12 +39,12 @@ function isVideo(item) {
 }
 
 function FileItem(props) {
-  console.log(props.value);
+//  console.log(props.value);
   let item = props.value.data;
   console.log("Title Orginal:", item.title);
   if (!item.title) {
     item.title = "Geen titel"
-  } else { 
+  } else {
     if (item.title.includes("[")) {
       let titleP1 = item.title.slice(item.title.indexOf("]")+1, item.title.length)
       let titleP2 = item.title.slice(0, Math.abs(item.title.indexOf("[")));
@@ -59,10 +60,15 @@ function FileItem(props) {
       console.log("Nothing in the title");
     }
   }
-  if (item.preview.images[0].source.url) {
-    // TEMP: ALS Afbeeldingen niet werken console.log("item.preview.images[0]:", item.preview);
-    item.url = item.preview.images[0].source.url;
+  try {
+    if (item["preview"]["images"][0]["source"]["url"]) {
+      // TEMP: ALS Afbeeldingen niet werken console.log("item.preview.images[0]:", item.preview);
+      item.url = item.preview.images[0].source.url;
+    }
+  } catch (error) {
+    console.log(item)
   }
+  
 
   /* FIXME: als thumbnails van andre websites niet meer werken dan dit gebruiken
   if (!item.is_reddit_media_domain) {
@@ -129,23 +135,35 @@ const FileList = (props) => {
 
 //TODO:export async function getStaticProps() {
 export async function getServerSideProps({ query }) {
+  rReddit = "GoneMild";
   if (Object.keys(query).length != 0) { console.log(`Er is een query met ${Object.keys(query)[0]}: ${query[Object.keys(query)[0]]}`) }
   rReddit = (Object.keys(query).length != 0) ? query[Object.keys(query)[0]] : 'gonemild';
   console.time("Making api call");
   let Fdata = await fetch(`https://api.reddit.com/r/${rReddit}`, { headers: { 'User-Agent': 'Mozilla/5.1 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.3 Safari/604.1.15'}});
   if (!Fdata.ok) {
-    console.log(Fdata.statusCode);
+    console.log(Fdata.status);
     console.log(Fdata.statusText);
+    return {
+      props: { Home: {children: []} }
+    };
+  } else {
+    let Jdata = await Fdata.json();
+    console.timeEnd("Making api call");
+    let data = Jdata["data"];
+    console.log(JSON.stringify(Fdata));
+    return {
+      props: { Home: data }
+    };
   }
-  let Jdata = await Fdata.json();
-  console.timeEnd("Making api call");
-  let data = Jdata["data"];
-  console.log(JSON.stringify(Fdata));
-  return {
-    props: { Home: data },
-  };
 };
 
+export function NotFound() {
+  return (
+    <>
+    <h1>This subreddit was not found</h1>
+    </>
+  )
+}
 export default function Home(props) {
   let RList = props.Home.children;
   return (
