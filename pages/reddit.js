@@ -1,10 +1,15 @@
 import Head from 'next/head'
+import { useEffect } from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
-let rReddit;
+
+let ElementIsPlaying = {
+  Playing: false,
+  element: null
+};
 
 function array_chunk(arr, size) {
   let result = [];
@@ -26,17 +31,18 @@ function isVideo(item) {
       }
     }
   }
+  
   function handleStart(e) {
-    console.log("EventStart:", e);
     e.target.loop = false;
   }
+  
   function handleDoubleClick(e) {
     console.log("EventDoubleClick:", e);
-    //is playing
+    //See if the video is playing
     if (!e.target.paused || !e.target.ended) {
       console.log((e.target.offsetWidth / 2 > e.clientX - e.target.getBoundingClientRect().left) ? "links" : "rechts");
       if (e.target.offsetWidth / 2 > e.clientX - e.target.getBoundingClientRect().left) {
-        //Link
+        //Left
         e.target.currentTime -= 2;
       } else {
         e.target.currentTime += 2;
@@ -46,38 +52,68 @@ function isVideo(item) {
     }
   }
   
-  document.addEventListener("keyup", event => {
-    if (event.code === 'ArrowRight') {
-      alert('Enter is pressed!');
-    }
-  });
+  function handlePlay(e) {
+    ElementIsPlaying.Playing = true;
+    ElementIsPlaying.element = e.target;
+  }
+  
+  function handlePause(e) {
+    ElementIsPlaying.Playing = false;
+    ElementIsPlaying.element = null;
+  }
   
   try {
-    //onClick="{if (this.paused) { this.play() } else { this.pause() }}"
     if (item.preview.hasOwnProperty('reddit_video_preview')) {
       //return <video className="card-img-top" controls  preload="auto" loop poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} width={item.preview.reddit_video_preview.width} height={item.preview.reddit_video_preview.height}>
-      return <video className="card-img-top" preload="auto" poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} muted onClick={handleClick} onDoubleClick={handleDoubleClick} onLoadStart={handleStart}>
+      return (<video className="card-img-top" preload="auto" poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&") : item.preview.images[0].source.url } muted onClick={handleClick} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
       <source src={item.preview.reddit_video_preview.hls_url} />
       <source src={item.preview.reddit_video_preview.dash_url} />
       <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
       Your browser does not support the video tag.
-      </video>;
+      </video>
+      );
     } else {
-      return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
+      return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&") ? item.url.replaceAll("&amp;", "&") : item.url} alt={item.alt} />;
     }
   } catch (e) {
-    console.log(e);
     try {
       return <Card.Img variant="top" src={item.url.replace("&amp;", "&")} alt={item.alt} />;
     } catch (e) {
-      console.log(e);
-      return <Card.Img variant="top" src={item.url.replace("amp;", "")} alt={item.alt} />;
+      return <Card.Img variant="top" src={item.url} alt={item.alt} />;
     }
   }
 }
 
 function FileItem(props) {
   //  console.log(props.value);
+  useEffect(() => {
+    document.addEventListener("keyup", event => {
+      if (event.code === 'ArrowRight') {
+        //Need to skip forward here
+        if (ElementIsPlaying.element != null) {
+          if (!ElementIsPlaying.element.ended) {
+            if (ElementIsPlaying.Playing) {
+              ElementIsPlaying.element.currentTime += 1;
+            }
+          } else {
+            ElementIsPlaying.element.currentTime = 2;
+          }
+        }
+      }
+    });
+    
+    document.addEventListener("keyup", event => {
+      if (event.code === 'ArrowLeft') {
+        //Need to skip forward here
+        if (ElementIsPlaying.element != null) {
+          if (!(ElementIsPlaying.element.currentTime === 0)) {
+            ElementIsPlaying.element.currentTime -= 1;
+          }
+        }
+      }
+    });
+  }, []);
+  
   let item = props.value.data;
   console.log("Title Orginal:", item.title);
   if (!item.title) {
@@ -145,23 +181,24 @@ function FileItem(props) {
     </Col>
     );
   }
-  const FileList = (props) => {
+  function FileList(props) {
     console.log("Props:", props);
     let mtp = props.Rjson.filter(data => {
       return data.data.stickied !== true;
     });
+    
     let rows = array_chunk(mtp.slice(0, -1), 4);
     return (
       <Container fluid>
       <br />
-      <h1>The subreddit: <kbd>r/{rReddit}</kbd></h1>
+      <h1>The subreddit: <kbd>r/{props.rReddit}</kbd></h1>
       <br />
       {
         rows.map((row) => (
           <Row>
           {
             row.map((data) => (
-              <FileItem key={data.data.permalink.toString()} value={data} /> // Mischien nog 'created' doen
+              <FileItem key={data.data.permalink.toString() ? data.data.permalink.toString() : String(Math.floor(Math.random() * 100))} value={data} /> // Mischien nog 'created' doen
               ))
             }
             </Row>
@@ -171,11 +208,10 @@ function FileItem(props) {
           );
         }
         
-        //TODO:export async function getStaticProps() {
         export async function getServerSideProps({ query }) {
-          rReddit = "GoneMild";
+          console.log("Query:", query)
           if (Object.keys(query).length != 0) { console.log(`Er is een query met ${Object.keys(query)[0]}: ${query[Object.keys(query)[0]]}`) }
-          rReddit = (Object.keys(query).length != 0) ? query[Object.keys(query)[0]] : 'gonemild';
+          let rReddit = String((Object.keys(query).length != 0) ? query[Object.keys(query)[0]] : "gonemild");
           console.time("Making api call");
           let Fdata = await fetch(`https://api.reddit.com/r/${rReddit}`, { headers: { 'User-Agent': 'Mozilla/5.1 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.3 Safari/604.1.15'}});
           if (!Fdata.ok) {
@@ -190,48 +226,41 @@ function FileItem(props) {
             let data = Jdata["data"];
             console.log(JSON.stringify(Fdata));
             return {
-              props: { Home: data }
+              props: { Home: data, SubReddit: rReddit }
             };
           }
         };
         
-        export function NotFound() {
+        export default function Home(props) {
+          let RList = props.Home.children;
           return (
             <>
-            <h1>This subreddit was not found</h1>
+            <Head>
+            <title>Subreddit r/{props.SubReddit}</title>
+            <meta name="viewport" content="initial-scale=1.0, width=device-width"/>
+            <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+            <meta name="apple-mobile-web-app-title" content="reddit"/>
+            <link rel="manifest" href="manifest.json"/>
+            <meta property="og:image:secure_url" content="https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png"/>
+            <meta property="og:image:alt" content="reddit logo"/>
+            <link rel="apple-touch-icon" sizes="57x57" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-57x57.png" />
+            <link rel="apple-touch-icon" sizes="60x60" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-60x60.png" />
+            <link rel="apple-touch-icon" sizes="72x72" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-72x72.png" />
+            <link rel="apple-touch-icon" sizes="76x76" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-76x76.png" />
+            <link rel="apple-touch-icon" sizes="114x114" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-114x114.png" />
+            <link rel="apple-touch-icon" sizes="120x120" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-120x120.png" />
+            <link rel="apple-touch-icon" sizes="144x144" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-144x144.png" />
+            <link rel="apple-touch-icon" sizes="152x152" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-152x152.png" />
+            <link rel="apple-touch-icon" sizes="180x180" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-180x180.png" />
+            <link rel="icon" type="image/png" sizes="192x192" href="https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png" />
+            <link rel="icon" type="image/png" sizes="32x32" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-32x32.png" />
+            <link rel="icon" type="image/png" sizes="96x96" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-96x96.png" />
+            <link rel="icon" type="image/png" sizes="16x16" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" />
+            <meta property="og:type" content="website"/>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" crossOrigin="anonymous"></link>
+            </Head>
+            <FileList Rjson={RList} rReddit={props.SubReddit} />
             </>
-            )
+            );
           }
-          export default function Home(props) {
-            let RList = props.Home.children;
-            return (
-              <>
-              <Head>
-              <title>Subreddit r/{rReddit}</title>
-              <meta name="viewport" content="initial-scale=1.0, width=device-width"/>
-              <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-              <meta name="apple-mobile-web-app-title" content="reddit"/>
-              <link rel="manifest" href="./manifest.json"/>
-              <meta property="og:image:secure_url" content="https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png"/>
-              <meta property="og:image:alt" content="reddit logo"/>
-              <link rel="apple-touch-icon" sizes="57x57" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-57x57.png" />
-              <link rel="apple-touch-icon" sizes="60x60" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-60x60.png" />
-              <link rel="apple-touch-icon" sizes="72x72" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-72x72.png" />
-              <link rel="apple-touch-icon" sizes="76x76" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-76x76.png" />
-              <link rel="apple-touch-icon" sizes="114x114" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-114x114.png" />
-              <link rel="apple-touch-icon" sizes="120x120" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-120x120.png" />
-              <link rel="apple-touch-icon" sizes="144x144" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-144x144.png" />
-              <link rel="apple-touch-icon" sizes="152x152" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-152x152.png" />
-              <link rel="apple-touch-icon" sizes="180x180" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-180x180.png" />
-              <link rel="icon" type="image/png" sizes="192x192" href="https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png" />
-              <link rel="icon" type="image/png" sizes="32x32" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-32x32.png" />
-              <link rel="icon" type="image/png" sizes="96x96" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-96x96.png" />
-              <link rel="icon" type="image/png" sizes="16x16" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" />
-              <meta property="og:type" content="website"/>
-              <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" crossOrigin="anonymous"></link>
-              </Head>
-              <FileList Rjson={RList}/>
-              </>
-              );
-            }
-            
+          
