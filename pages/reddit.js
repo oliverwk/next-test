@@ -8,7 +8,8 @@ import Container from "react-bootstrap/Container";
 
 let ElementIsPlaying = {
   Playing: false,
-  element: null
+  element: null,
+  wasElement: null
 };
 
 function array_chunk(arr, size) {
@@ -31,11 +32,11 @@ function isVideo(item) {
       }
     }
   }
-  
+
   function handleStart(e) {
     e.target.loop = false;
   }
-  
+
   function handleDoubleClick(e) {
     console.log("EventDoubleClick:", e);
     //See if the video is playing
@@ -51,21 +52,25 @@ function isVideo(item) {
       e.target.currentTime = 0;
     }
   }
-  
+
   function handlePlay(e) {
     ElementIsPlaying.Playing = true;
     ElementIsPlaying.element = e.target;
+    if (ElementIsPlaying.wasElement === e.target) {
+      ElementIsPlaying.wasElement = null;
+    }
   }
-  
+
   function handlePause(e) {
     ElementIsPlaying.Playing = false;
     ElementIsPlaying.element = null;
+    ElementIsPlaying.wasElement = e.target;
   }
-  
+
   try {
     if (item.preview.hasOwnProperty('reddit_video_preview')) {
       //return <video className="card-img-top" controls  preload="auto" loop poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} width={item.preview.reddit_video_preview.width} height={item.preview.reddit_video_preview.height}>
-      return (<video className="card-img-top" preload="auto" poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&") : item.preview.images[0].source.url } muted onClick={handleClick} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
+      return (<video className="card-img-top" preload="auto" onError={(err) => alert(`An error occournd in the video tag: ${err}`)} poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&") : item.preview.images[0].source.url } muted onClick={handleClick} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
       <source src={item.preview.reddit_video_preview.hls_url} />
       <source src={item.preview.reddit_video_preview.dash_url} />
       <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
@@ -85,30 +90,55 @@ function isVideo(item) {
 }
 
 function FileItem(props) {
-  //  console.log(props.value);
   useEffect(() => {
     document.addEventListener("keyup", event => {
       if (event.code === 'ArrowRight') {
-        //Need to skip forward here
-        if (ElementIsPlaying.element != null) {
-          if (!ElementIsPlaying.element.ended) {
-            if (ElementIsPlaying.Playing) {
-              ElementIsPlaying.element.currentTime += 1;
-            }
+        //Go skip forward here
+        if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
+        //Check of er iets aan het afspelen is
+          //Zo ja, dan het ander op pauze zetten
+          if (ElementIsPlaying.wasElement != null) { ElementIsPlaying.wasElement.pause(); }
+          //Checken of je niet te ver vooruit gaat skippen.
+          if (!(ElementIsPlaying.element.duration >= (ElementIsPlaying.element.currentTime + 1.0))) {
+              ElementIsPlaying.element.currentTime += 1.0;
+              //if (ElementIsPlaying.element.duration >= ElementIsPlaying.element.currentTime) { ElementIsPlaying.element.play() } else { ElementIsPlaying.element.pause() }
           } else {
-            ElementIsPlaying.element.currentTime = 2;
+            //Als je te ver vooruit zou skippen kom je terug bij het begin en zet je hem op pauze
+            ElementIsPlaying.element.currentTime = 0.0;
+            ElementIsPlaying.element.pause();
+          }
+        //Kijken of er niets aan het afspelen is en er iets heeft afgespeeld
+        } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
+          //Kijken of het niet al afgelopen is of Je te ver naar voren skipt
+          if (!ElementIsPlaying.wasElement.ended && !(ElementIsPlaying.wasElement.duration >= (ElementIsPlaying.wasElement.currentTime + 1.0))) {
+            ElementIsPlaying.wasElement.currentTime += 1.0;
+          } else {
+            //Als hij al geëndigd is dan weer terug naar het begin of als je te ver naar voren skipt ook terug naar het begin
+            ElementIsPlaying.wasElement.currentTime = 0.0;
+            ElementIsPlaying.wasElement.pause();
           }
         }
-      }
-    });
-    
-    document.addEventListener("keyup", event => {
-      if (event.code === 'ArrowLeft') {
-        //Need to skip forward here
-        if (ElementIsPlaying.element != null) {
-          if (!(ElementIsPlaying.element.currentTime === 0)) {
-            ElementIsPlaying.element.currentTime -= 1;
+      } else if (event.code === 'ArrowLeft') {
+        //Go skip backward here
+        //Checken of er iets aan het afspelen is en of dat ook zo is
+        if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
+          //Checken of je naar achter kan en niet te ver naar achter skipt
+          if (!(ElementIsPlaying.element.currentTime > 1.0)) {
+            ElementIsPlaying.element.currentTime -= 1.0;
+          } else {
+            ElementIsPlaying.element.currentTime = 0.0;
+            ElementIsPlaying.element.pause();
           }
+        //Kijken of er niets aan het afspelen is en er iets heeft afgespeeld
+        } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
+
+          if (!(ElementIsPlaying.wasElement.currentTime > 1.0)) {
+            ElementIsPlaying.wasElement.currentTime -= 1.0;
+          } else {
+            ElementIsPlaying.wasElement.currentTime = 0.0;
+            ElementIsPlaying.wasElement.pause();
+          }
+
         }
       }
     });
@@ -123,15 +153,16 @@ function FileItem(props) {
       let titleP1 = item.title.slice(item.title.indexOf("]")+1, item.title.length)
       let titleP2 = item.title.slice(0, Math.abs(item.title.indexOf("[")));
       item.title  = titleP2+titleP1;
-      console.log("Title Editedd:"+titleP2+titleP1);
+      console.log("Title Editedd:", titleP2+titleP1);
     } else if (item.title.includes("(")) {
       let titleP1 = item.title.slice(item.title.indexOf(")")+1, item.title.length)
       let titleP2 = item.title.slice(0, Math.abs(item.title.indexOf("(")));
       item.title  = titleP2+titleP1;
       item.alt    = titleP2+titleP1;
-      console.log("Title Editedd:"+titleP2+titleP1);
-    } else {
-      console.log("Nothing in the title");
+      console.log("Title Editedd:", titleP2+titleP1);
+    } else if (item.title.includes("&amp;")) {
+      item.title = item.title.replace("&amp;", "&");
+      item.alt = item.title.replace("&amp;", "&");
     }
   }
   try {
@@ -190,44 +221,56 @@ function FileItem(props) {
     let rows = array_chunk(mtp.slice(0, -1), 4);
     return (
       <Container fluid>
-      <br />
-      <h1>The subreddit: <kbd>r/{props.rReddit}</kbd></h1>
-      <br />
-      {
-        rows.map((row) => (
-          <Row>
-          {
-            row.map((data) => (
-              <FileItem key={data.data.permalink.toString() ? data.data.permalink.toString() : String(Math.floor(Math.random() * 100))} value={data} /> // Mischien nog 'created' doen
-              ))
-            }
+        <br />
+        <h1>The subreddit: <kbd>r/{props.rReddit}</kbd></h1>
+        <br />
+        {
+          rows.map((row, imt) => (
+            <Row>
+              {
+                row.map((data, i) => {
+                  console.log(String(Math.round((imt + (Math.random() * 101)) * (i + (Math.random() * 101)) + (10 + (Math.random() * 101)))));
+                  return <FileItem value={data} key={String(Math.round((imt + (Math.random() * 101)) * (i + (Math.random() * 101)) + (10 + (Math.random() * 101))))}/>
+                })
+              }
             </Row>
-            ))
-          }
-          </Container>
-          );
+          ))
         }
+      </Container>
+    );
+  }
         
         export async function getServerSideProps({ query }) {
-          console.log("Query:", query)
+          console.log("Query:", query);
+          let rQuery = "";
           if (Object.keys(query).length != 0) { console.log(`Er is een query met ${Object.keys(query)[0]}: ${query[Object.keys(query)[0]]}`) }
           let rReddit = String((Object.keys(query).length != 0) ? query[Object.keys(query)[0]] : "gonemild");
+          if (Object.keys(query).length >= 2) {
+            let howMuch = parseInt(query[Object.keys(query)[1]]);
+            console.log("howMuch:", howMuch);
+            rQuery += `?limit=${howMuch}`
+          }
           console.time("Making api call");
-          let Fdata = await fetch(`https://api.reddit.com/r/${rReddit}`, { headers: { 'User-Agent': 'Mozilla/5.1 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.3 Safari/604.1.15'}});
+          let Fdata = await fetch(`https://api.reddit.com/r/${rReddit}${rQuery}`, { headers: { 'User-Agent': 'Mozilla/5.1 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.3 Safari/604.1.15'}});
           if (!Fdata.ok) {
             console.log(Fdata.status);
             console.log(Fdata.statusText);
-            return {
-              props: { Home: {children: []} }
-            };
+            return { notFound: true };
           } else {
             let Jdata = await Fdata.json();
-            console.timeEnd("Making api call");
-            let data = Jdata["data"];
-            console.log(JSON.stringify(Fdata));
-            return {
-              props: { Home: data, SubReddit: rReddit }
-            };
+            if (Jdata.data.children.length == 0) {
+              console.log("Not Found")
+              console.timeEnd("Making api call");
+              console.log(Fdata.status);
+              return { notFound: true };
+            } else {
+              console.timeEnd("Making api call");
+              let data = Jdata["data"];
+              console.log(JSON.stringify(Fdata));
+              return {
+                props: { Home: data, SubReddit: rReddit }
+              };
+            }
           }
         };
         
