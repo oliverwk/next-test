@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import styles from '../../lib/modal.module.css'
 import { useRouter } from 'next/router';
+import styles from '../../lib/modal.module.css'
 import { boxGetFile } from '../../lib/boxes.js';
 
 export default function file({ file }) {
