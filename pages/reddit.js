@@ -67,15 +67,43 @@ function isVideo(item) {
     ElementIsPlaying.wasElement = e.target;
   }
 
+  function handleTimeupdate(e) {
+    if (e.target.parentNode.querySelectorAll('div').length === 1) {
+      let rect = document.createElement("div");
+      rect.className = "progress";
+      rect.style.height = "0.2rem";
+      e.target.parentNode.appendChild(rect);
+      let bar = document.createElement("div");
+      bar.className = "progress-bar";
+      bar.id = "bar";
+      bar.setAttribute("role", "progressbar");
+      bar.setAttribute("aria-valuenow", "0");
+      bar.setAttribute("aria-valuemin", "0");
+      bar.setAttribute("aria-valuemax", "0");
+      rect.appendChild(bar);
+    } else {
+      let per = ((e.target.currentTime / e.target.duration) * 100);
+      console.debug("Persentage", per);
+      e.target.parentNode.querySelector('.progress > #bar').style.width = `${Math.round(per)}%`;
+      e.target.parentNode.querySelector('.progress > #bar').setAttribute("aria-valuenow", String(Math.round(per)));
+    }
+  }
+
   try {
     if (item.preview.hasOwnProperty('reddit_video_preview')) {
       //return <video className="card-img-top" controls  preload="auto" loop poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} width={item.preview.reddit_video_preview.width} height={item.preview.reddit_video_preview.height}>
-      return (<video className="card-img-top" preload="auto" onError={(err) => alert(`An error occournd in the video tag: ${err}`)} poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&") : item.preview.images[0].source.url } muted onClick={handleClick} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
-      <source src={item.preview.reddit_video_preview.hls_url} />
-      <source src={item.preview.reddit_video_preview.dash_url} />
-      <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
-      Your browser does not support the video tag.
-      </video>
+      return (
+        <>
+          <video className="card-img-top" preload="auto" onError={(err) => alert(`An error occournd in the video tag: ${JSON.stringify(err)}`)} poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&") : item.preview.images[0].source.url } muted onClick={handleClick} onTimeUpdate={handleTimeupdate} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
+            <source src={item.preview.reddit_video_preview.hls_url} />
+            <source src={item.preview.reddit_video_preview.dash_url} />
+            <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
+            Your browser does not support the video tag.
+          </video>
+          <div className="progress" style={{height: "0.2rem"}}>
+            <div className="progress-bar" role="progressbar" id="bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </>
       );
     } else {
       return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&") ? item.url.replaceAll("&amp;", "&") : item.url} alt={item.alt} />;
@@ -99,21 +127,25 @@ function FileItem(props) {
           //Zo ja, dan het ander op pauze zetten
           if (ElementIsPlaying.wasElement != null) { ElementIsPlaying.wasElement.pause(); }
           //Checken of je niet te ver vooruit gaat skippen.
-          if (!(ElementIsPlaying.element.duration >= (ElementIsPlaying.element.currentTime + 1.0))) {
+          if (ElementIsPlaying.element.duration >= (ElementIsPlaying.element.currentTime + 1.0)) {
+              console.log("Added 1 second time");
               ElementIsPlaying.element.currentTime += 1.0;
               //if (ElementIsPlaying.element.duration >= ElementIsPlaying.element.currentTime) { ElementIsPlaying.element.play() } else { ElementIsPlaying.element.pause() }
           } else {
             //Als je te ver vooruit zou skippen kom je terug bij het begin en zet je hem op pauze
+            console.log("Stoping video");
             ElementIsPlaying.element.currentTime = 0.0;
             ElementIsPlaying.element.pause();
           }
         //Kijken of er niets aan het afspelen is en er iets heeft afgespeeld
         } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
           //Kijken of het niet al afgelopen is of Je te ver naar voren skipt
-          if (!ElementIsPlaying.wasElement.ended && !(ElementIsPlaying.wasElement.duration >= (ElementIsPlaying.wasElement.currentTime + 1.0))) {
+          if (!ElementIsPlaying.wasElement.ended && (ElementIsPlaying.wasElement.duration >= (ElementIsPlaying.wasElement.currentTime + 1.0))) {
+            console.log("Added 1 second time");
             ElementIsPlaying.wasElement.currentTime += 1.0;
           } else {
             //Als hij al geëndigd is dan weer terug naar het begin of als je te ver naar voren skipt ook terug naar het begin
+            console.log("Stoping video");
             ElementIsPlaying.wasElement.currentTime = 0.0;
             ElementIsPlaying.wasElement.pause();
           }
@@ -123,18 +155,19 @@ function FileItem(props) {
         //Checken of er iets aan het afspelen is en of dat ook zo is
         if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
           //Checken of je naar achter kan en niet te ver naar achter skipt
-          if (!(ElementIsPlaying.element.currentTime > 1.0)) {
+          if (ElementIsPlaying.element.currentTime > 1.0) {
             ElementIsPlaying.element.currentTime -= 1.0;
           } else {
+            console.log("Stoping video");
             ElementIsPlaying.element.currentTime = 0.0;
             ElementIsPlaying.element.pause();
           }
         //Kijken of er niets aan het afspelen is en er iets heeft afgespeeld
         } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
-
-          if (!(ElementIsPlaying.wasElement.currentTime > 1.0)) {
+          if (ElementIsPlaying.wasElement.currentTime > 1.0) {
             ElementIsPlaying.wasElement.currentTime -= 1.0;
           } else {
+            console.log("Stoping video");
             ElementIsPlaying.wasElement.currentTime = 0.0;
             ElementIsPlaying.wasElement.pause();
           }
@@ -143,7 +176,7 @@ function FileItem(props) {
       }
     });
   }, []);
-  
+
   let item = props.value.data;
   console.log("Title Orginal:", item.title);
   if (!item.title) {
@@ -173,14 +206,14 @@ function FileItem(props) {
   } catch (error) {
     console.log(item)
   }
-  
-  
+
+
   /* FIXME: als thumbnails van andre websites niet meer werken dan dit gebruiken
   if (!item.is_reddit_media_domain) {
     item.url = item.thumbnail
   }
   */
-  
+
   if (item.hasOwnProperty('media_metadata')) {
     item.url = item["media_metadata"][Object.keys(item.media_metadata)[0]]["s"]["u"]
   }
@@ -217,7 +250,7 @@ function FileItem(props) {
     let mtp = props.Rjson.filter(data => {
       return data.data.stickied !== true;
     });
-    
+
     let rows = array_chunk(mtp.slice(0, -1), 4);
     return (
       <Container fluid>
@@ -226,11 +259,10 @@ function FileItem(props) {
         <br />
         {
           rows.map((row, imt) => (
-            <Row>
+            <Row key={String(Math.round((Math.random()*10000)+10))}>
               {
                 row.map((data, i) => {
-                  console.log(String(Math.round((imt + (Math.random() * 101)) * (i + (Math.random() * 101)) + (10 + (Math.random() * 101)))));
-                  return <FileItem value={data} key={String(Math.round((imt + (Math.random() * 101)) * (i + (Math.random() * 101)) + (10 + (Math.random() * 101))))}/>
+                  return <FileItem value={data} key={String(Math.round((Math.random()*10000)+10))}/>
                 })
               }
             </Row>
@@ -239,7 +271,7 @@ function FileItem(props) {
       </Container>
     );
   }
-        
+
         export async function getServerSideProps({ query }) {
           console.log("Query:", query);
           let rQuery = "";
@@ -273,7 +305,7 @@ function FileItem(props) {
             }
           }
         };
-        
+
         export default function Home(props) {
           let RList = props.Home.children;
           return (
@@ -302,8 +334,7 @@ function FileItem(props) {
             <meta property="og:type" content="website"/>
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" crossOrigin="anonymous"></link>
             </Head>
-            <FileList Rjson={RList} rReddit={props.SubReddit} />
+            <FileList Rjson={RList} key="RaNdOmStRiNg" rReddit={props.SubReddit} />
             </>
             );
           }
-          
