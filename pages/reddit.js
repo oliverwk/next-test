@@ -11,6 +11,8 @@ let ElementIsPlaying = {
   element: null,
   wasElement: null
 };
+let access_token;
+let accessToken;
 
 function array_chunk(arr, size) {
   let result = [];
@@ -83,7 +85,6 @@ function isVideo(item) {
       rect.appendChild(bar);
     } else {
       let per = ((e.target.currentTime / e.target.duration) * 100);
-      console.debug("Persentage", per);
       e.target.parentNode.querySelector('.progress > #bar').style.width = `${Math.round(per)}%`;
       e.target.parentNode.querySelector('.progress > #bar').setAttribute("aria-valuenow", String(Math.round(per)));
     }
@@ -93,8 +94,10 @@ function isVideo(item) {
     if (item.preview.hasOwnProperty('reddit_video_preview')) {
       //return <video className="card-img-top" controls  preload="auto" loop poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} width={item.preview.reddit_video_preview.width} height={item.preview.reddit_video_preview.height}>
       return (
+        //onError={(err) =>(`An error occournd in the video tag: ${JSON.stringify(err)}`)}
+        //onError={console.error}
         <>
-          <video className="card-img-top" preload="auto" onError={(err) => alert(`An error occournd in the video tag: ${JSON.stringify(err)}`)} poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&") : item.preview.images[0].source.url } muted onClick={handleClick} onTimeUpdate={handleTimeupdate} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
+          <video className="card-img-top" preload="auto" poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&") : item.preview.images[0].source.url } muted onClick={handleClick} onTimeUpdate={handleTimeupdate} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
             <source src={item.preview.reddit_video_preview.hls_url} />
             <source src={item.preview.reddit_video_preview.dash_url} />
             <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
@@ -118,6 +121,53 @@ function isVideo(item) {
 }
 
 function FileItem(props) {
+  async function UpVote(argv) {
+    // example: t3_no45bb
+    // https://www.reddit.com/dev/api/#fullnames
+    // example comment: t1_gzw9qdv
+    console.log("Name:", argv.target.name);
+    let name = argv.target.name
+    if (!access_token) {
+      let accesTokenRes = await fetch('https://www.reddit.com/api/v1/access_token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Basic N2NaMFhYamowYnFHMWc6TDBiOWR3MTFkZW0xbnV1dHhpQ1ZuWnAwWS1xbmRn'
+        },
+        body: 'grant_type=password&username=coffe-cup-404&password=nybtun-riwvi2-Tepkaw'
+      });
+      accessToken = await accesTokenRes.json();
+      access_token = accessToken.access_token;
+    }
+
+    let VoteRes = await fetch('https://oauth.reddit.com/api/vote', {
+      method: 'POST',
+      headers: {
+        //'user-agent': 'nl.wittopkoning.box',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `bearer ${access_token}`
+      },
+      body: `id=${name}&dir=1&api_type=json` //rank ????
+    });
+
+    if (VoteRes.status === 403) {
+      console.log("The Vote was unauthrized", VoteRes.status);
+      let accesTokenRes = await fetch('https://www.reddit.com/api/v1/access_token', { method: 'POST', headers: { 'Authorization': 'Basic N2NaMFhYamowYnFHMWc6TDBiOWR3MTFkZW0xbnV1dHhpQ1ZuWnAwWS1xbmRn' }, body: 'grant_type=password&username=coffe-cup-404&password=nybtun-riwvi2-Tepkaw' });
+      accessToken = await accesTokenRes.json();
+      access_token = accessToken.access_token;
+      VoteRes = await fetch('https://oauth.reddit.com/api/vote', { method: 'POST', headers: {'Authorization': `bearer ${access_token}`,
+        'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `id=${name}&dir=1`
+      });
+    }
+    console.log(VoteRes.status);
+    if (VoteRes.ok) {
+      argv.target.className = "btn btn-success"
+    } else {
+      argv.target.className = "btn btn-danger"
+    }
+
+  }
   useEffect(() => {
     document.addEventListener("keyup", event => {
       if (event.code === 'ArrowRight') {
@@ -125,7 +175,7 @@ function FileItem(props) {
         if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
         //Check of er iets aan het afspelen is
           //Zo ja, dan het ander op pauze zetten
-          if (ElementIsPlaying.wasElement != null) { ElementIsPlaying.wasElement.pause(); }
+                //if (ElementIsPlaying.wasElement != null) { ElementIsPlaying.wasElement.pause(); }
           //Checken of je niet te ver vooruit gaat skippen.
           if (ElementIsPlaying.element.duration >= (ElementIsPlaying.element.currentTime + 1.0)) {
               console.log("Added 1 second time");
@@ -133,12 +183,11 @@ function FileItem(props) {
               //if (ElementIsPlaying.element.duration >= ElementIsPlaying.element.currentTime) { ElementIsPlaying.element.play() } else { ElementIsPlaying.element.pause() }
           } else {
             //Als je te ver vooruit zou skippen kom je terug bij het begin en zet je hem op pauze
-            console.log("Stoping video");
             ElementIsPlaying.element.currentTime = 0.0;
             ElementIsPlaying.element.pause();
           }
-        //Kijken of er niets aan het afspelen is en er iets heeft afgespeeld
-        } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
+          //Kijken of er niets aan het afspelen is en er iets heeft afgespeeld
+          } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
           //Kijken of het niet al afgelopen is of Je te ver naar voren skipt
           if (!ElementIsPlaying.wasElement.ended && (ElementIsPlaying.wasElement.duration >= (ElementIsPlaying.wasElement.currentTime + 1.0))) {
             console.log("Added 1 second time");
@@ -171,7 +220,6 @@ function FileItem(props) {
             ElementIsPlaying.wasElement.currentTime = 0.0;
             ElementIsPlaying.wasElement.pause();
           }
-
         }
       }
     });
@@ -236,12 +284,13 @@ function FileItem(props) {
   }
   return (
     <Col sm>
-    {isVideo(item)}
-    <Card.Body>
-    <Card.Title>{item.author}</Card.Title>
-    <Card.Text>{item.title}</Card.Text>
-    <Button href={item.permalink} variant="primary">View the Image on reddit</Button>
-    </Card.Body>
+      {isVideo(item)}
+      <Card.Body>
+        <a herf={`https://www.reddit.com/user/${item.author}`}><Card.Title>{item.author}</Card.Title></a>
+      <Card.Text>{item.title}</Card.Text>
+        <Button href={item.permalink} variant="primary">View the Image on reddit</Button>
+        <Button onClick={UpVote} style={{ 'margin-left':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
+      </Card.Body>
     </Col>
     );
   }
@@ -283,7 +332,8 @@ function FileItem(props) {
             rQuery += `?limit=${howMuch}`
           }
           console.time("Making api call");
-          let Fdata = await fetch(`https://api.reddit.com/r/${rReddit}${rQuery}`, { headers: { 'User-Agent': 'Mozilla/5.1 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.3 Safari/604.1.15'}});
+          //raw_json=1
+          let Fdata = await fetch(`https://api.reddit.com/r/${rReddit}${rQuery}`, { headers: { 'User-Agent': 'nl.wittopkoning.box'}});
           if (!Fdata.ok) {
             console.log(Fdata.status);
             console.log(Fdata.statusText);
