@@ -132,9 +132,9 @@ function FileItem(props) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': 'Basic N2NaMFhYamowYnFHMWc6TDBiOWR3MTFkZW0xbnV1dHhpQ1ZuWnAwWS1xbmRn'
+          'Authorization': 'Basic '+process.env.REDDIT_PASSWORD_BASIC
         },
-        body: 'grant_type=password&username=coffe-cup-404&password=nybtun-riwvi2-Tepkaw'
+        body: `grant_type=password&username=coffe-cup-404&password=${process.env.REDDIT_PASSWORD}`
       });
       accessToken = await accesTokenRes.json();
       access_token = accessToken.access_token;
