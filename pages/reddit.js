@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { useEffect } from "react";
 import Row from "react-bootstrap/Row";
-import { up } from "../lib/reddit_upvote.js";
+import { up, GetAccesToken} from "../lib/reddit_upvote.js";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
@@ -123,7 +123,8 @@ function isVideo(item) {
 
 function FileItem(props) {
   async function UpVote(argv) {
-    up(argv)
+    up(argv, access_token)
+    console.log("acUP", access_token);
   }
   useEffect(() => {
     document.addEventListener("keyup", event => {
@@ -304,10 +305,12 @@ function FileItem(props) {
               return { notFound: true };
             } else {
               console.timeEnd("Making api call");
+              access_token = await GetAccesToken()
+              console.log("GettingAC", access_token);
               let data = Jdata["data"];
               console.log(JSON.stringify(Fdata));
               return {
-                props: { Home: data, SubReddit: rReddit }
+                props: { Home: data, SubReddit: rReddit, accesstoken: access_token }
               };
             }
           }
@@ -315,6 +318,7 @@ function FileItem(props) {
 
         export default function Home(props) {
           let RList = props.Home.children;
+          access_token = props.accesstoken
           return (
             <>
             <Head>
