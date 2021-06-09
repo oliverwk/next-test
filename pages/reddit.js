@@ -1,6 +1,7 @@
 import Head from 'next/head'
 import { useEffect } from "react";
 import Row from "react-bootstrap/Row";
+import { up } from "../lib/reddit_upvote.js";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
@@ -122,51 +123,7 @@ function isVideo(item) {
 
 function FileItem(props) {
   async function UpVote(argv) {
-    // example: t3_no45bb
-    // https://www.reddit.com/dev/api/#fullnames
-    // example comment: t1_gzw9qdv
-    console.log("Name:", argv.target.name);
-    let name = argv.target.name
-    if (!access_token) {
-      let accesTokenRes = await fetch('https://www.reddit.com/api/v1/access_token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': 'Basic '+process.env.REDDIT_PASSWORD_BASIC
-        },
-        body: `grant_type=password&username=coffe-cup-404&password=${process.env.REDDIT_PASSWORD}`
-      });
-      accessToken = await accesTokenRes.json();
-      access_token = accessToken.access_token;
-    }
-
-    let VoteRes = await fetch('https://oauth.reddit.com/api/vote', {
-      method: 'POST',
-      headers: {
-        //'user-agent': 'nl.wittopkoning.box',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `bearer ${access_token}`
-      },
-      body: `id=${name}&dir=1&api_type=json` //rank ????
-    });
-
-    if (VoteRes.status === 403) {
-      console.log("The Vote was unauthrized", VoteRes.status);
-      let accesTokenRes = await fetch('https://www.reddit.com/api/v1/access_token', { method: 'POST', headers: { 'Authorization': 'Basic '+process.env.REDDIT_PASSWORD_BASIC }, body: `grant_type=password&username=coffe-cup-404&password=${process.env.REDDIT_PASSWORD}` });
-      accessToken = await accesTokenRes.json();
-      access_token = accessToken.access_token;
-      VoteRes = await fetch('https://oauth.reddit.com/api/vote', { method: 'POST', headers: {'Authorization': `bearer ${access_token}`,
-        'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `id=${name}&dir=1`
-      });
-    }
-    console.log(VoteRes.status);
-    if (VoteRes.ok) {
-      argv.target.className = "btn btn-success"
-    } else {
-      argv.target.className = "btn btn-danger"
-    }
-
+    up(argv)
   }
   useEffect(() => {
     document.addEventListener("keyup", event => {
@@ -289,7 +246,7 @@ function FileItem(props) {
         <a herf={`https://www.reddit.com/user/${item.author}`}><Card.Title>{item.author}</Card.Title></a>
       <Card.Text>{item.title}</Card.Text>
         <Button href={item.permalink} variant="primary">View the Image on reddit</Button>
-        <Button onClick={UpVote} style={{ 'margin-left':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
+        <Button onClick={UpVote} style={{ 'marginLeft':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
       </Card.Body>
     </Col>
     );
