@@ -152,7 +152,7 @@ function FileItem(props) {
 
     if (VoteRes.status === 403) {
       console.log("The Vote was unauthrized", VoteRes.status);
-      let accesTokenRes = await fetch('https://www.reddit.com/api/v1/access_token', { method: 'POST', headers: { 'Authorization': 'Basic N2NaMFhYamowYnFHMWc6TDBiOWR3MTFkZW0xbnV1dHhpQ1ZuWnAwWS1xbmRn' }, body: 'grant_type=password&username=coffe-cup-404&password=nybtun-riwvi2-Tepkaw' });
+      let accesTokenRes = await fetch('https://www.reddit.com/api/v1/access_token', { method: 'POST', headers: { 'Authorization': 'Basic '+process.env.REDDIT_PASSWORD_BASIC }, body: `grant_type=password&username=coffe-cup-404&password=${process.env.REDDIT_PASSWORD}` });
       accessToken = await accesTokenRes.json();
       access_token = accessToken.access_token;
       VoteRes = await fetch('https://oauth.reddit.com/api/vote', { method: 'POST', headers: {'Authorization': `bearer ${access_token}`,
