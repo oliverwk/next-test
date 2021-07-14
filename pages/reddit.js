@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { useEffect } from "react";
 import Row from "react-bootstrap/Row";
-import { up, GetAccesToken} from "../lib/reddit_upvote.js";
+import { up, down, GetAccesToken} from "../lib/reddit_upvote.js";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
@@ -107,7 +107,7 @@ function isVideo(item) {
             <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
             Your browser does not support the video tag.
           </video>
-          <div class="progress" style={{ height: "0.2rem" }}><div class="progress-bar" id="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"></div></div>
+          <div className="progress" style={{ height: "0.2rem" }}><div className="progress-bar" id="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"></div></div>
         </div>
         );
         //<div className="progress" style={{height: "0.2rem"}}>
@@ -126,10 +126,14 @@ function isVideo(item) {
   }
   
   function FileItem(props) {
-    async function UpVote(argv) {
-      up(argv, access_token)
-      console.log("acUP", access_token);
+    function UpVote(argv) {
+      up(argv, access_token);
     }
+
+    function DownVote(argv) {
+      down(argv, access_token);
+    }
+    
     
     useEffect(() => {
       document.addEventListener("keyup", event => {
@@ -252,12 +256,13 @@ function isVideo(item) {
         <Card.Body>
           <a herf={`https://www.reddit.com/user/${item.author}`}><Card.Title>{item.author}</Card.Title></a>
           <Card.Text>{item.title}</Card.Text>
-          <Button href={item.permalink} variant="primary">View {item.preview.reddit_video_preview ? 'video' : 'image'} on reddit</Button>
+          <Button href={item.permalink} variant="primary">View {item.preview ? (item.preview.reddit_video_preview ? 'video' : 'image') : 'image'} on reddit</Button>
           <Button onClick={UpVote} style={{ 'marginLeft':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
         </Card.Body>
       </Col>
       );
     }
+  
     function FileList(props) {
       console.log("Props:", props);
       let mtp = props.Rjson.filter(data => {
@@ -293,12 +298,16 @@ function isVideo(item) {
           if (Object.keys(query).length >= 2) {
             let howMuch = parseInt(query[Object.keys(query)[1]]);
             console.log("howMuch:", howMuch);
-            if (howMuch % 3 == 0) {
+            if (howMuch % 4 == 0) {
               rQuery += `?limit=${howMuch}`
-            } else if ((howMuch - 1) % 3 == 0) {
+            } else if ((howMuch - 1) % 4 == 0) {
               rQuery += `?limit=${howMuch - 1}`
-            } else if ((howMuch - 2) % 3 == 0) {
+            } else if ((howMuch - 2) % 4 == 0) {
               rQuery += `?limit=${howMuch - 2}`
+            } else if ((howMuch - 3) % 4 == 0) {
+              rQuery += `?limit=${howMuch - 3}`
+            } else if ((howMuch - 4) % 4 == 0) {
+              rQuery += `?limit=${howMuch - 4}`
             }
           }
           console.time("Making api call");
