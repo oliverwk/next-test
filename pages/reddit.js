@@ -13,7 +13,6 @@ let ElementIsPlaying = {
   wasElement: null
 };
 let access_token;
-let accessToken;
 
 function array_chunk(arr, size) {
   let result = [];
@@ -101,15 +100,15 @@ function isVideo(item) {
       return (
         //onError={(err) =>(`An error occournd in the video tag: ${JSON.stringify(err)}`)}
         //onError={console.error}
-        <>
+        <div>
           <video className="card-img-top" preload="auto" poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&") : item.preview.images[0].source.url } muted onClick={handleClick} onTimeUpdate={handleTimeupdate} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
             <source src={item.preview.reddit_video_preview.hls_url} />
             <source src={item.preview.reddit_video_preview.dash_url} />
             <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
             Your browser does not support the video tag.
           </video>
-          <div class="progress" style={{ height: "0.2rem" }}><div class="progress-bar" id="bar" role="progressbar" aria-valuenow="14" aria-valuemin="0" aria-valuemax="0"></div></div>
-        </>
+          <div class="progress" style={{ height: "0.2rem" }}><div class="progress-bar" id="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"></div></div>
+        </div>
         );
         //<div className="progress" style={{height: "0.2rem"}}>
         //  <div className="progress-bar" role="progressbar" id="bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
@@ -253,7 +252,7 @@ function isVideo(item) {
         <Card.Body>
           <a herf={`https://www.reddit.com/user/${item.author}`}><Card.Title>{item.author}</Card.Title></a>
           <Card.Text>{item.title}</Card.Text>
-          <Button href={item.permalink} variant="primary">View image on reddit</Button>
+          <Button href={item.permalink} variant="primary">View {item.preview.reddit_video_preview ? 'video' : 'image'} on reddit</Button>
           <Button onClick={UpVote} style={{ 'marginLeft':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
         </Card.Body>
       </Col>
@@ -294,7 +293,13 @@ function isVideo(item) {
           if (Object.keys(query).length >= 2) {
             let howMuch = parseInt(query[Object.keys(query)[1]]);
             console.log("howMuch:", howMuch);
-            rQuery += `?limit=${howMuch}`
+            if (howMuch % 3 == 0) {
+              rQuery += `?limit=${howMuch}`
+            } else if ((howMuch - 1) % 3 == 0) {
+              rQuery += `?limit=${howMuch - 1}`
+            } else if ((howMuch - 2) % 3 == 0) {
+              rQuery += `?limit=${howMuch - 2}`
+            }
           }
           console.time("Making api call");
           // raw_json=1
