@@ -71,7 +71,7 @@ function isVideo(item) {
   }
 
   function handleTimeupdate(e) {
-    if (e.target.parentNode.querySelectorAll('div').length === 1) {
+    /*if (e.target.parentNode.querySelectorAll('div').length === 1) {
       let rect = document.createElement("div");
       rect.className = "progress";
       rect.style.height = "0.2rem";
@@ -84,11 +84,11 @@ function isVideo(item) {
       bar.setAttribute("aria-valuemin", "0");
       bar.setAttribute("aria-valuemax", "0");
       rect.appendChild(bar);
-    } else {
-      let per = ((e.target.currentTime / e.target.duration) * 100);
-      e.target.parentNode.querySelector('.progress > #bar').style.width = `${Math.round(per)}%`;
-      e.target.parentNode.querySelector('.progress > #bar').setAttribute("aria-valuenow", String(Math.round(per)));
-    }
+    } else {*/
+      let pers = ((e.target.currentTime / e.target.duration) * 100);
+      e.target.parentNode.querySelector('.progress > #bar').style.width = `${Math.round(pers)}%`;
+      e.target.parentNode.querySelector('.progress > #bar').setAttribute("aria-valuenow", `${Math.round(pers)}`);
+    //}
   }
 
   try {
@@ -126,6 +126,7 @@ function FileItem(props) {
     up(argv, access_token)
     console.log("acUP", access_token);
   }
+  
   useEffect(() => {
     document.addEventListener("keyup", event => {
       if (event.code === 'ArrowRight') {
@@ -246,7 +247,7 @@ function FileItem(props) {
       <Card.Body>
         <a herf={`https://www.reddit.com/user/${item.author}`}><Card.Title>{item.author}</Card.Title></a>
       <Card.Text>{item.title}</Card.Text>
-        <Button href={item.permalink} variant="primary">View the Image on reddit</Button>
+        <Button href={item.permalink} variant="primary">View image on reddit</Button>
         <Button onClick={UpVote} style={{ 'marginLeft':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
       </Card.Body>
     </Col>
