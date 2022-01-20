@@ -34,11 +34,11 @@ function isVideo(item) {
       }
     }
   }
-  
+
   function handleStart(e) {
     e.target.loop = false;
   }
-  
+
   function handleDoubleClick(e) {
     console.log("EventDoubleClick:", e);
     //See if the video is playing
@@ -54,7 +54,7 @@ function isVideo(item) {
       e.target.currentTime = 0;
     }
   }
-  
+
   function handlePlay(e) {
     ElementIsPlaying.Playing = true;
     ElementIsPlaying.element = e.target;
@@ -62,13 +62,13 @@ function isVideo(item) {
       ElementIsPlaying.wasElement = null;
     }
   }
-  
+
   function handlePause(e) {
     ElementIsPlaying.Playing = false;
     ElementIsPlaying.element = null;
     ElementIsPlaying.wasElement = e.target;
   }
-  
+
   function MakeProgressBar(e) {
     let rect = document.createElement("div");
     rect.className = "progress";
@@ -83,7 +83,7 @@ function isVideo(item) {
     bar.setAttribute("aria-valuemax", "0");
     rect.appendChild(bar);
   }
-  
+
   function handleTimeupdate(e) {
     if (e.target.parentNode.querySelectorAll('.progress > #bar').length != 1) {
       MakeProgressBar(e.target.parentNode)
@@ -124,7 +124,7 @@ function isVideo(item) {
       }
     }
   }
-  
+
   function FileItem(props) {
     function UpVote(argv) {
       up(argv, access_token);
@@ -133,66 +133,85 @@ function isVideo(item) {
     function DownVote(argv) {
       down(argv, access_token);
     }
-    
-    
-    useEffect(() => {
-      document.addEventListener("keyup", event => {
-        if (event.code === 'ArrowRight') {
-          // Skip forward here
-          if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
-            // Check of er iets aan het afspelen is
-            // Zo ja, dan het ander op pauze zetten
-            // if (ElementIsPlaying.wasElement != null) { ElementIsPlaying.wasElement.pause(); }
-            // Checken of je niet te ver vooruit gaat skippen.
-            if (ElementIsPlaying.element.duration >= (ElementIsPlaying.element.currentTime + 1.0)) {
+
+    function KeyBoardEvent(e) {
+      if (e.code === 'ArrowRight') {
+        // Skip forward here
+        if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
+          // Check of er iets aan het afspelen is
+          // Zo ja, dan het ander op pauze zetten
+          // if (ElementIsPlaying.wasElement != null) { ElementIsPlaying.wasElement.pause(); }
+          // Checken of je niet te ver vooruit gaat skippen.
+          if (ElementIsPlaying.element.duration >= (ElementIsPlaying.element.currentTime + 1.0)) {
+            if (e.shiftKey) {
+              console.log("Added 0.25 second time, because shift is pressed", ElementIsPlaying.element.currentTime);
+              ElementIsPlaying.element.currentTime += (event.altKey ? 0.0025 :0.025);
+              ElementIsPlaying.element.play();
+            } else {
               console.log("Added 1 second time");
               ElementIsPlaying.element.currentTime += 1.0;
               ElementIsPlaying.element.play();
-              // if (ElementIsPlaying.element.duration >= ElementIsPlaying.element.currentTime) { ElementIsPlaying.element.play() } else { ElementIsPlaying.element.pause() }
-            } else {
-              // Als je te ver vooruit zou skippen kom je terug bij het begin en zet je hem op pauze
-              ElementIsPlaying.element.currentTime = 0.0;
-              ElementIsPlaying.element.pause();
             }
-            // Kijken of er niets aan het afspelen is en er iets heeft afgespeeld
-          } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
-            // Kijken of het niet al afgelopen is of Je te ver naar voren skipt
-            if (!ElementIsPlaying.wasElement.ended && (ElementIsPlaying.wasElement.duration >= (ElementIsPlaying.wasElement.currentTime + 1.0))) {
+            // if (ElementIsPlaying.element.duration >= ElementIsPlaying.element.currentTime) { ElementIsPlaying.element.play() } else { ElementIsPlaying.element.pause() }
+          } else {
+            // Als je te ver vooruit zou skippen kom je terug bij het begin en zet je hem op pauze
+            ElementIsPlaying.element.currentTime = 0.0;
+            ElementIsPlaying.element.pause();
+          }
+          // Kijken of er niets aan het afspelen is en er iets heeft afgespeeld
+        } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
+          // Kijken of het niet al afgelopen is of Je te ver naar voren skipt
+          if (!ElementIsPlaying.wasElement.ended && (ElementIsPlaying.wasElement.duration >= (ElementIsPlaying.wasElement.currentTime + 1.0))) {
+            if (e.shiftKey) {
+              console.log("Added 0.25 second time, because shift is pressed");
+              ElementIsPlaying.wasElement.currentTime += 0.25;
+            } else {
               console.log("Added 1 second time");
               ElementIsPlaying.wasElement.currentTime += 1.0;
-            } else {
-              // Als hij al geëndigd is dan weer terug naar het begin of als je te ver naar voren skipt ook terug naar het begin
-              console.log("Stoping video");
-              ElementIsPlaying.wasElement.currentTime = 0.0;
-              ElementIsPlaying.wasElement.pause();
             }
-          }
-        } else if (event.code === 'ArrowLeft') {
-          // Go skip backward here
-          // Checken of er iets aan het afspelen is en of dat ook zo is
-          if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
-            // Checken of je naar achter kan en niet te ver naar achter skipt
-            if (ElementIsPlaying.element.currentTime > 1.0) {
-              ElementIsPlaying.element.currentTime -= 1.0;
-            } else {
-              console.log("Stoping video");
-              ElementIsPlaying.element.currentTime = 0.0;
-              ElementIsPlaying.element.pause();
-            }
-            // Kijken of er niets aan het afspelen is en er iets heeft afgespeeld
-          } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
-            if (ElementIsPlaying.wasElement.currentTime > 1.0) {
-              ElementIsPlaying.wasElement.currentTime -= 1.0;
-            } else {
-              console.log("Stoping video");
-              ElementIsPlaying.wasElement.currentTime = 0.0;
-              ElementIsPlaying.wasElement.pause();
-            }
+          } else {
+            // Als hij al geëndigd is dan weer terug naar het begin of als je te ver naar voren skipt ook terug naar het begin
+            console.log("Stoping video");
+            ElementIsPlaying.wasElement.currentTime = 0.0;
+            ElementIsPlaying.wasElement.pause();
           }
         }
+      } else if (e.code === 'ArrowLeft') {
+        // Go skip backward here
+        // Checken of er iets aan het afspelen is en of dat ook zo is
+        if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
+          // Checken of je naar achter kan en niet te ver naar achter skipt
+          if (ElementIsPlaying.element.currentTime > 1.0 || e.shiftKey) {
+            if (e.shiftKey) {
+                ElementIsPlaying.element.currentTime -= 0.25;
+            } else {
+                ElementIsPlaying.element.currentTime -= 1.0;
+            }
+          } else {
+            console.log("Stoping video");
+            ElementIsPlaying.element.currentTime = 0.0;
+            ElementIsPlaying.element.pause();
+          }
+          // Kijken of er niets aan het afspelen is en er iets heeft afgespeeld
+        } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
+          if (ElementIsPlaying.wasElement.currentTime > 1.0) {
+            ElementIsPlaying.wasElement.currentTime -= 1.0;
+          } else {
+            console.log("Stoping video");
+            ElementIsPlaying.wasElement.currentTime = 0.0;
+            ElementIsPlaying.wasElement.pause();
+          }
+        }
+      }
+    }
+
+
+    useEffect(() => {
+      document.addEventListener("keyup", event => {
+            KeyBoardEvent(event);
       });
     }, []);
-    
+
     let item = props.value.data;
     console.log("Title Orginal:", item.title);
     if (!item.title) {
@@ -222,14 +241,14 @@ function isVideo(item) {
     } catch (error) {
       console.log(item)
     }
-    
-    
+
+
     /* FIXME: als thumbnails van andre websites niet meer werken dan dit gebruiken
     if (!item.is_reddit_media_domain) {
       item.url = item.thumbnail
     }
     */
-    
+
     if (item.hasOwnProperty('media_metadata')) {
       item.url = item["media_metadata"][Object.keys(item.media_metadata)[0]]["s"]["u"]
     }
@@ -250,6 +269,14 @@ function isVideo(item) {
     if (!item.title) {
       item.title = "No title"
     }
+
+    if (props.OnlyVideo && item.preview) {
+      if (!item.preview.hasOwnProperty('reddit_video_preview')) {
+        console.log(`Wanting OnlyVideo: ${props.OnlyVideo} and this is not so returning null`);
+        return null;
+      }
+    }
+
     return (
       <Col sm>
         {isVideo(item)}
@@ -262,7 +289,7 @@ function isVideo(item) {
       </Col>
       );
     }
-  
+
     function FileList(props) {
       console.log("Props:", props);
       let mtp = props.Rjson.filter(data => {
@@ -280,7 +307,7 @@ function isVideo(item) {
                 <Row key={String(Math.round((Math.random()*10000)+10))}>
                 {
                   row.map((data, i) => {
-                    return <FileItem value={data} key={String(Math.round((Math.random()*10000)+10))}/>
+                    return <FileItem OnlyVideo={props.OnlyVideo} value={data} key={String(Math.round((Math.random()*10000)+10))}/>
                   })
                 }
                 </Row>
@@ -289,12 +316,14 @@ function isVideo(item) {
           </Container>
           );
         }
-        
+
         export async function getServerSideProps({ query }) {
           console.log("Query:", query);
           let rQuery = "";
           if (Object.keys(query).length != 0) { console.log(`Er is een query met ${Object.keys(query)[0]}: ${query[Object.keys(query)[0]]}`) }
           let rReddit = String((Object.keys(query).length != 0) ? query[Object.keys(query)[0]] : "gonemild");
+	        let OnlyVideo = !!(query["video"]);
+          console.log("o:", OnlyVideo);
           if (Object.keys(query).length >= 2) {
             let howMuch = parseInt(query[Object.keys(query)[1]]);
             console.log("howMuch:", howMuch);
@@ -331,12 +360,14 @@ function isVideo(item) {
               let data = Jdata["data"];
               console.log(JSON.stringify(Fdata));
               return {
-                props: { Home: data, SubReddit: rReddit, accesstoken: access_token }
+                props: { Home: data, SubReddit: rReddit, accesstoken: access_token, onlyVideo: OnlyVideo }
               };
             }
           }
         };
-        
+
+
+
         export default function Home(props) {
           let RList = props.Home.children;
           access_token = props.accesstoken;
@@ -366,8 +397,7 @@ function isVideo(item) {
               <meta property="og:type" content="website"/>
               <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" crossOrigin="anonymous"></link>
             </Head>
-            <FileList Rjson={RList} key="RaNdOmStRiNg" rReddit={props.SubReddit} />
+            <FileList Rjson={RList} key="RaNdOmStRiNg" rReddit={props.SubReddit} OnlyVideo={props.onlyVideo} />
             </>
             );
           }
-          

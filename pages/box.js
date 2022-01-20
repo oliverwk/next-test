@@ -40,7 +40,7 @@ function FileItem(props) {
 export async function getServerSideProps({ query }) {
   if (Object.keys(query).length != 0) { console.log(`Er is een query met ${Object.keys(query)[0]}: ${query[Object.keys(query)[0]]}`) }
   console.time("Calling box api");
-  let datas = await boxGetFolder();
+  let datas = await boxGetFolder(132260108317, Math.floor(Math.random() * 801));
   let data  = await shuffleArray(datas.entries);
   console.timeEnd("Calling box api");
   data = data.length ? data.slice(30) : data;
