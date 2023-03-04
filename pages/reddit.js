@@ -54,7 +54,7 @@ function isVideo(item) {
       e.target.currentTime = 0;
     }
   }
-  
+
   function handlePlay(e) {
     ElementIsPlaying.Playing = true;
     ElementIsPlaying.element = e.target;
@@ -94,6 +94,14 @@ function isVideo(item) {
     }
   }
   
+  function ClickTimeLineHandler(e) {
+	console.log(e)
+	let procentVanFilmpje = e.nativeEvent.offsetX / e.target.clientWidth;
+	console.log("procentVanFilmpje:", procentVanFilmpje);
+	let filmpje = e.target.parentNode.parentNode.querySelector('video');
+	filmpje.currentTime = procentVanFilmpje * filmpje.duration;
+  }
+  
   try {
     if (item.preview.hasOwnProperty('reddit_video_preview')) {
       //return <video className="card-img-top" controls  preload="auto" loop poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} width={item.preview.reddit_video_preview.width} height={item.preview.reddit_video_preview.height}>
@@ -107,16 +115,17 @@ function isVideo(item) {
         <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
         Your browser does not support the video tag.
         </video>
-        <div className="progress" style={{ height: "0.2rem" }}><div className="progress-bar" id="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"></div></div>
+        <div className="progress" style={{ height: "0.2rem" }} onClick={ClickTimeLineHandler}><div className="progress-bar" id="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"></div></div>
         </div>
         );
         //<div className="progress" style={{height: "0.2rem"}}>
         //  <div className="progress-bar" role="progressbar" id="bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
         //</div>
       } else {
-        return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&") ? item.url.replaceAll("&amp;", "&") : item.url} alt={item.alt} />;
+        return <Card.Img variant="top" src={item.url.includes("&amp;") ? item.url.replaceAll("&amp;", "&") : item.url} alt={item.alt} />;
       }
     } catch (e) {
+	console.log("HHHHHHHHHHHH, Er is hier naar de catch gegaan, dus er is iets mis met deze url:", item);
       try {
         return <Card.Img variant="top" src={item.url.replace("&amp;", "&")} alt={item.alt} />;
       } catch (e) {
@@ -319,12 +328,14 @@ function isVideo(item) {
         }
         
         export async function getServerSideProps({ query }) {
-          console.log("Query:", query);
+          console.log("Query:", query); // reddit?r=gonemild&video=true&limit=50
           let rQuery = "";
           if (Object.keys(query).length != 0) { console.log(`Er is een query met ${Object.keys(query)[0]}: ${query[Object.keys(query)[0]]}`) }
           let rReddit = String((Object.keys(query).length != 0) ? query[Object.keys(query)[0]] : "gonemild");
-          let OnlyVideo = !!(query["video"]);
-          console.log("o:", OnlyVideo);
+          let typeReddit = Object.keys(query)[0] == "u" ? "u" : "r";
+	  console.log("TypeReddit:", typeReddit);
+	  let OnlyVideo = !!(query["video"]);
+          console.log("OnlyVideo:", OnlyVideo);
           if (Object.keys(query).length >= 2) {
             let howMuch = parseInt(query[Object.keys(query)[1]]);
             console.log("howMuch:", howMuch);
@@ -342,7 +353,7 @@ function isVideo(item) {
           }
           console.time("Making api call");
           // raw_json=1
-          let Fdata = await fetch(`https://api.reddit.com/r/${rReddit}${rQuery}`, { headers: { 'User-Agent': 'nl.wittopkoning.box'}});
+          let Fdata = await fetch(`https://api.reddit.com/${typeReddit}/${rReddit}${rQuery}`, { headers: { 'User-Agent': 'nl.wittopkoning.box'}});
           if (!Fdata.ok) {
             console.log(Fdata.status);
             console.log(Fdata.statusText);
