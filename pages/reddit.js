@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { useEffect } from "react";
+import React from "react";
 import Row from "react-bootstrap/Row";
 import { up, down, GetAccesToken} from "../lib/reddit_upvote.js";
 import Col from "react-bootstrap/Col";
@@ -34,11 +34,11 @@ function isVideo(item) {
       }
     }
   }
-
+  
   function handleStart(e) {
     e.target.loop = false;
   }
-
+  
   function handleDoubleClick(e) {
     console.log("EventDoubleClick:", e);
     //See if the video is playing
@@ -54,7 +54,7 @@ function isVideo(item) {
       e.target.currentTime = 0;
     }
   }
-
+  
   function handlePlay(e) {
     ElementIsPlaying.Playing = true;
     ElementIsPlaying.element = e.target;
@@ -62,13 +62,13 @@ function isVideo(item) {
       ElementIsPlaying.wasElement = null;
     }
   }
-
+  
   function handlePause(e) {
     ElementIsPlaying.Playing = false;
     ElementIsPlaying.element = null;
     ElementIsPlaying.wasElement = e.target;
   }
-
+  
   function MakeProgressBar(e) {
     let rect = document.createElement("div");
     rect.className = "progress";
@@ -83,7 +83,7 @@ function isVideo(item) {
     bar.setAttribute("aria-valuemax", "0");
     rect.appendChild(bar);
   }
-
+  
   function handleTimeupdate(e) {
     if (e.target.parentNode.querySelectorAll('.progress > #bar').length != 1) {
       MakeProgressBar(e.target.parentNode)
@@ -101,13 +101,13 @@ function isVideo(item) {
         //onError={(err) =>(`An error occournd in the video tag: ${JSON.stringify(err)}`)}
         //onError={console.error}
         <div>
-          <video className="card-img-top" preload="auto" poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&") : item.preview.images[0].source.url } muted onClick={handleClick} onTimeUpdate={handleTimeupdate} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
-            <source src={item.preview.reddit_video_preview.hls_url} />
-            <source src={item.preview.reddit_video_preview.dash_url} />
-            <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
-            Your browser does not support the video tag.
-          </video>
-          <div className="progress" style={{ height: "0.2rem" }}><div className="progress-bar" id="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"></div></div>
+        <video className="card-img-top" preload="auto" poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&") : item.preview.images[0].source.url } muted onClick={handleClick} onTimeUpdate={handleTimeupdate} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
+        <source src={item.preview.reddit_video_preview.hls_url} />
+        <source src={item.preview.reddit_video_preview.dash_url} />
+        <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
+        Your browser does not support the video tag.
+        </video>
+        <div className="progress" style={{ height: "0.2rem" }}><div className="progress-bar" id="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"></div></div>
         </div>
         );
         //<div className="progress" style={{height: "0.2rem"}}>
@@ -124,17 +124,18 @@ function isVideo(item) {
       }
     }
   }
-
+  
   function FileItem(props) {
     function UpVote(argv) {
       up(argv, access_token);
     }
-
+    
     function DownVote(argv) {
       down(argv, access_token);
     }
-
+    
     function KeyBoardEvent(e) {
+      console.log("The KeyBoardEvent() was called", e);
       if (e.code === 'ArrowRight') {
         // Skip forward here
         if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
@@ -183,9 +184,9 @@ function isVideo(item) {
           // Checken of je naar achter kan en niet te ver naar achter skipt
           if (ElementIsPlaying.element.currentTime > 1.0 || e.shiftKey) {
             if (e.shiftKey) {
-                ElementIsPlaying.element.currentTime -= 0.25;
+              ElementIsPlaying.element.currentTime -= 0.25;
             } else {
-                ElementIsPlaying.element.currentTime -= 1.0;
+              ElementIsPlaying.element.currentTime -= 1.0;
             }
           } else {
             console.log("Stoping video");
@@ -204,14 +205,14 @@ function isVideo(item) {
         }
       }
     }
-
-
-    useEffect(() => {
+    
+    
+    /*React.useEffect(() => {
       document.addEventListener("keyup", event => {
-            KeyBoardEvent(event);
+        KeyBoardEvent(event);
       });
-    }, []);
-
+    }, []);*/
+    
     let item = props.value.data;
     console.log("Title Orginal:", item.title);
     if (!item.title) {
@@ -241,19 +242,18 @@ function isVideo(item) {
     } catch (error) {
       console.log(item)
     }
-
-
+    
+    
     /* FIXME: als thumbnails van andre websites niet meer werken dan dit gebruiken
     if (!item.is_reddit_media_domain) {
       item.url = item.thumbnail
     }
     */
-
+    
     if (item.hasOwnProperty('media_metadata')) {
       item.url = item["media_metadata"][Object.keys(item.media_metadata)[0]]["s"]["u"]
     }
     if (item.hasOwnProperty('preview')) {
-      console.log("Video", item.preview.hasOwnProperty('reddit_video_preview'));
       if (item.preview.hasOwnProperty('reddit_video_preview')) {
         item.permalink = item.preview.reddit_video_preview.fallback_url
         item.url = item.preview.images[0].source.url
@@ -269,60 +269,61 @@ function isVideo(item) {
     if (!item.title) {
       item.title = "No title"
     }
-
+    
     if (props.OnlyVideo && item.preview) {
       if (!item.preview.hasOwnProperty('reddit_video_preview')) {
         console.log(`Wanting OnlyVideo: ${props.OnlyVideo} and this is not so returning null`);
         return null;
       }
     }
-
+    
     return (
       <Col sm>
-        {isVideo(item)}
-        <Card.Body>
-          <a herf={`https://www.reddit.com/user/${item.author}`}><Card.Title>{item.author}</Card.Title></a>
-          <Card.Text>{item.title}</Card.Text>
-          <Button href={item.permalink} variant="primary">View {item.preview ? (item.preview.reddit_video_preview ? 'video' : 'image') : 'image'} on reddit</Button>
-          <Button onClick={UpVote} style={{ 'marginLeft':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
-        </Card.Body>
+      <Board/>
+      {isVideo(item)}
+      <Card.Body>
+      <a herf={`https://www.reddit.com/user/${item.author}`}><Card.Title>{item.author}</Card.Title></a>
+      <Card.Text>{item.title}</Card.Text>
+      <Button href={item.permalink} variant="primary">View {item.preview ? (item.preview.reddit_video_preview ? 'video' : 'image') : 'image'} on reddit</Button>
+      <Button onClick={UpVote} style={{ 'marginLeft':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
+      </Card.Body>
       </Col>
       );
     }
-
+    
     function FileList(props) {
       console.log("Props:", props);
       let mtp = props.Rjson.filter(data => {
         return data.data.stickied !== true;
       });
-
+      
       let rows = array_chunk(mtp.slice(0, -1), 4);
       return (
         <Container fluid>
-          <br />
-          <h1>The subreddit: <kbd>r/{props.rReddit}</kbd></h1>
-          <br />
+        <br />
+        <h1>The subreddit: <kbd>r/{props.rReddit}</kbd></h1>
+        <br />
+        {
+          rows.map((row, imt) => (
+            <Row key={String(Math.round((Math.random()*10000)+10))}>
             {
-              rows.map((row, imt) => (
-                <Row key={String(Math.round((Math.random()*10000)+10))}>
-                {
-                  row.map((data, i) => {
-                    return <FileItem OnlyVideo={props.OnlyVideo} value={data} key={String(Math.round((Math.random()*10000)+10))}/>
-                  })
-                }
-                </Row>
-                ))
-              }
+              row.map((data, i) => {
+                return <FileItem OnlyVideo={props.OnlyVideo} value={data} key={String(Math.round((Math.random()*10000)+10))}/>
+              })
+            }
+            </Row>
+            ))
+          }
           </Container>
           );
         }
-
+        
         export async function getServerSideProps({ query }) {
           console.log("Query:", query);
           let rQuery = "";
           if (Object.keys(query).length != 0) { console.log(`Er is een query met ${Object.keys(query)[0]}: ${query[Object.keys(query)[0]]}`) }
           let rReddit = String((Object.keys(query).length != 0) ? query[Object.keys(query)[0]] : "gonemild");
-	        let OnlyVideo = !!(query["video"]);
+          let OnlyVideo = !!(query["video"]);
           console.log("o:", OnlyVideo);
           if (Object.keys(query).length >= 2) {
             let howMuch = parseInt(query[Object.keys(query)[1]]);
@@ -365,39 +366,129 @@ function isVideo(item) {
             }
           }
         };
-
-
-
+        
+        
+        
         export default function Home(props) {
           let RList = props.Home.children;
           access_token = props.accesstoken;
           return (
             <>
             <Head>
-              <title>Subreddit r/{props.SubReddit}</title>
-              <meta name="viewport" content="initial-scale=1.0, width=device-width"/>
-              <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-              <meta name="apple-mobile-web-app-title" content="reddit"/>
-              <link rel="manifest" href="manifest.json"/>
-              <meta property="og:image:secure_url" content="https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png"/>
-              <meta property="og:image:alt" content="reddit logo"/>
-              <link rel="apple-touch-icon" sizes="57x57" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-57x57.png" />
-              <link rel="apple-touch-icon" sizes="60x60" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-60x60.png" />
-              <link rel="apple-touch-icon" sizes="72x72" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-72x72.png" />
-              <link rel="apple-touch-icon" sizes="76x76" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-76x76.png" />
-              <link rel="apple-touch-icon" sizes="114x114" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-114x114.png" />
-              <link rel="apple-touch-icon" sizes="120x120" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-120x120.png" />
-              <link rel="apple-touch-icon" sizes="144x144" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-144x144.png" />
-              <link rel="apple-touch-icon" sizes="152x152" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-152x152.png" />
-              <link rel="apple-touch-icon" sizes="180x180" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-180x180.png" />
-              <link rel="icon" type="image/png" sizes="192x192" href="https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png" />
-              <link rel="icon" type="image/png" sizes="32x32" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-32x32.png" />
-              <link rel="icon" type="image/png" sizes="96x96" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-96x96.png" />
-              <link rel="icon" type="image/png" sizes="16x16" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" />
-              <meta property="og:type" content="website"/>
-              <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" crossOrigin="anonymous"></link>
+            <title>Subreddit r/{props.SubReddit}</title>
+            <meta name="viewport" content="initial-scale=1.0, width=device-width"/>
+            <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+            <meta name="apple-mobile-web-app-title" content="reddit"/>
+            <link rel="manifest" href="manifest.json"/>
+            <meta property="og:image:secure_url" content="https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png"/>
+            <meta property="og:image:alt" content="reddit logo"/>
+            <link rel="apple-touch-icon" sizes="57x57" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-57x57.png" />
+            <link rel="apple-touch-icon" sizes="60x60" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-60x60.png" />
+            <link rel="apple-touch-icon" sizes="72x72" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-72x72.png" />
+            <link rel="apple-touch-icon" sizes="76x76" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-76x76.png" />
+            <link rel="apple-touch-icon" sizes="114x114" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-114x114.png" />
+            <link rel="apple-touch-icon" sizes="120x120" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-120x120.png" />
+            <link rel="apple-touch-icon" sizes="144x144" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-144x144.png" />
+            <link rel="apple-touch-icon" sizes="152x152" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-152x152.png" />
+            <link rel="apple-touch-icon" sizes="180x180" href="https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-180x180.png" />
+            <link rel="icon" type="image/png" sizes="192x192" href="https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png" />
+            <link rel="icon" type="image/png" sizes="32x32" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-32x32.png" />
+            <link rel="icon" type="image/png" sizes="96x96" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-96x96.png" />
+            <link rel="icon" type="image/png" sizes="16x16" href="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" />
+            <meta property="og:type" content="website"/>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" crossOrigin="anonymous"></link>
             </Head>
             <FileList Rjson={RList} key="RaNdOmStRiNg" rReddit={props.SubReddit} OnlyVideo={props.onlyVideo} />
             </>
             );
+          }
+          
+          class Board extends React.Component {
+            constructor(props) {
+              super(props);
+              
+              this.handleKeyboardEvent = this.handleKeyboardEvent.bind(this);
+            }
+            
+            componentDidMount() {
+              if (typeof document !== 'undefined') {
+                document.addEventListener('keydown', this.handleKeyboardEvent, false);
+                document.addEventListener('keyup', this.handleKeyboardEvent, false);
+                document.addEventListener('keypress', this.handleKeyboardEvent, false);
+              } else {
+                console.log(`typeof document == 'undefined'`);
+              }
+            }
+            
+            componentWillUnmount() {
+              if (typeof document !== 'undefined') {
+                document.removeEventListener('keydown', this.handleKeyboardEvent, false);
+                document.removeEventListener('keyup', this.handleKeyboardEvent, false);
+                document.removeEventListener('keypress', this.handleKeyboardEvent, false);
+              } else {
+                console.log(`typeof document == 'undefined'`);
+              }
+            }
+            
+            handleKeyboardEvent(e) {
+              //console.log(`Bonjour with event that is ${event.repeat}:`, event);
+              if (e.code === 'ArrowRight') {
+                if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
+                  if (ElementIsPlaying.element.duration >= (ElementIsPlaying.element.currentTime + 1.0)) {
+                    if (e.shiftKey) {
+                      console.log("Added 0.25 second time, because shift is pressed");
+                      ElementIsPlaying.element.currentTime += (e.altKey ? 0.0025 : 0.025);
+                      ElementIsPlaying.element.play();
+                    } else {
+                      console.log("Added 1 second time");
+                      ElementIsPlaying.element.currentTime += 1.0;
+                      ElementIsPlaying.element.play();
+                    }
+                  } else {
+                    ElementIsPlaying.element.currentTime = 0.0;
+                    ElementIsPlaying.element.pause();
+                  }
+                } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
+                  if (!ElementIsPlaying.wasElement.ended && (ElementIsPlaying.wasElement.duration >= (ElementIsPlaying.wasElement.currentTime + 1.0))) {
+                    if (e.shiftKey) {
+                      console.log("Added 0.25 second time, because shift is pressed");
+                      ElementIsPlaying.wasElement.currentTime += 0.25;
+                    } else {
+                      console.log("Added 1 second time");
+                      ElementIsPlaying.wasElement.currentTime += 1.0;
+                    }
+                  } else {
+                    console.log("Stoping video");
+                    ElementIsPlaying.wasElement.currentTime = 0.0;
+                    ElementIsPlaying.wasElement.pause();
+                  }
+                }
+              } else if (e.code === 'ArrowLeft') {
+                if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
+                  if (ElementIsPlaying.element.currentTime > 1.0 || e.shiftKey) {
+                    if (e.shiftKey) {
+                      ElementIsPlaying.element.currentTime -= 0.25;
+                    } else {
+                      ElementIsPlaying.element.currentTime -= 1.0;
+                    }
+                  } else {
+                    console.log("Stoping video");
+                    ElementIsPlaying.element.currentTime = 0.0;
+                    ElementIsPlaying.element.pause();
+                  }
+                } else if (ElementIsPlaying.wasElement != null && !ElementIsPlaying.Playing) {
+                  if (ElementIsPlaying.wasElement.currentTime > 1.0) {
+                    ElementIsPlaying.wasElement.currentTime -= 1.0;
+                  } else {
+                    console.log("Stoping video");
+                    ElementIsPlaying.wasElement.currentTime = 0.0;
+                    ElementIsPlaying.wasElement.pause();
+                  }
+                }
+              }
+            }
+            
+            render() {
+              return <p></p>;
+            }
           }
