@@ -129,7 +129,7 @@ function isVideo(item) {
       try {
         return <Card.Img variant="top" src={item.url.replace("&amp;", "&")} alt={item.alt} />;
       } catch (e) {
-        return <Card.Img variant="top" src={item.url} alt={item.alt} />;
+        return <Card.Img variant="top" src={item.url.replace("&amp;", "&")} alt={item.alt} />;
       }
     }
   }
