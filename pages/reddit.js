@@ -122,7 +122,7 @@ function isVideo(item) {
         //  <div className="progress-bar" role="progressbar" id="bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
         //</div>
       } else {
-        return <Card.Img variant="top" src={item.url.includes("&amp;") ? item.url.replaceAll("&amp;", "&") : item.url} alt={item.alt} />;
+        return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
       }
     } catch (e) {
 	console.log("HHHHHHHHHHHH, Er is hier naar de catch gegaan, dus er is iets mis met deze url:", item);
