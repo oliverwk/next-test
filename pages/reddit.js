@@ -1,3 +1,4 @@
+
 import Head from 'next/head'
 import React from "react";
 import Row from "react-bootstrap/Row";
@@ -109,7 +110,7 @@ function isVideo(item) {
         //onError={(err) =>(`An error occournd in the video tag: ${JSON.stringify(err)}`)}
         //onError={console.error}
         <div>
-        <video className="card-img-top" preload="auto" poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&") : item.preview.images[0].source.url } muted onClick={handleClick} onTimeUpdate={handleTimeupdate} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
+        <video className="card-img-top" preload="auto" poster={item.preview.images[0].source.url.replaceAll("&amp;", "&") ? item.preview.images[0].source.url.replaceAll("&amp;", "&").replaceAll("&amp;", "&") : item.preview.images[0].source.url.replaceAll("&amp;", "&").replaceAll("&amp;", "&") } muted onClick={handleClick} onTimeUpdate={handleTimeupdate} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
         <source src={item.preview.reddit_video_preview.hls_url} />
         <source src={item.preview.reddit_video_preview.dash_url} />
         <source src={item.preview.reddit_video_preview.fallback_url} type="video/mp4"/>
@@ -127,9 +128,9 @@ function isVideo(item) {
     } catch (e) {
 	console.log("HHHHHHHHHHHH, Er is hier naar de catch gegaan, dus er is iets mis met deze url:", item);
       try {
-        return <Card.Img variant="top" src={item.url.replace("&amp;", "&")} alt={item.alt} />;
+        return <Card.Img variant="top" src={item.url.replace("&amp;", "&").replaceAll("&amp;", "&")} alt={item.alt} />;
       } catch (e) {
-        return <Card.Img variant="top" src={item.url.replace("&amp;", "&")} alt={item.alt} />;
+        return <Card.Img variant="top" src={item.url.replace("&amp;", "&").replaceAll("&amp;", "&")} alt={item.alt} />;
       }
     }
   }
@@ -352,6 +353,7 @@ function isVideo(item) {
             }
           }
           console.time("Making api call");
+	  console.log("url:",`https://api.reddit.com/${typeReddit}/${rReddit}${rQuery}`)
           // raw_json=1
           let Fdata = await fetch(`https://api.reddit.com/${typeReddit}/${rReddit}${rQuery}`, { headers: { 'User-Agent': 'nl.wittopkoning.box'}});
           if (!Fdata.ok) {
