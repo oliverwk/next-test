@@ -23,6 +23,12 @@ function array_chunk(arr, size) {
   return result;
 };
 
+if(typeof String.prototype.replaceAll === "undefined") {
+    String.prototype.replaceAll = function(match, replace) {
+       return this.replace(new RegExp(match, 'g'), () => replace);
+    }
+}
+
 function isVideo(item) {
   function handleClick(e) {
     if (e.target.ended) {
@@ -136,7 +142,8 @@ function isVideo(item) {
         return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
       }
     } catch (e) {
-	console.log("HHHHHHHHHHHH, Er is hier naar de catch gegaan, dus er is iets mis met deze url:", item);
+       console.log("Er is een error", e);
+	     console.log("Er is hier naar de catch gegaan, dus er is iets mis met deze url:", item);
       try {
         return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
       } catch (e) {
@@ -302,13 +309,18 @@ function isVideo(item) {
       <Board/>
       {isVideo(item)}
       <Card.Body>
-      <a herf={`https://www.reddit.com/user/${item.author}`}><Card.Title>{item.author}</Card.Title></a>
-      <Card.Text>{item.title}</Card.Text>
-      <Button href={item.permalink} variant="primary">View {item.preview ? (item.preview.reddit_video_preview ? 'video' : (item.url.includes('gif') ? 'gif' : 'image') ) : 'image'} on reddit</Button>
-      <Button onClick={UpVote} onDoubleClick={DownVote} style={{ 'marginLeft':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
+        <a herf={`https://www.reddit.com/user/${item.author}`}><Card.Title>{item.author}</Card.Title></a>
+        <Card.Text>{item.title}</Card.Text>
+        <Button href={item.permalink} variant="primary">View {item.preview ? (item.preview.reddit_video_preview ? 'video' : (item.url.includes('gif') ? 'gif' : 'image') ) : 'image'} on reddit</Button>
+        <Button onClick={UpVote} onDoubleClick={DownVote} style={{ 'marginLeft':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
+        {subredditText(item)}
       </Card.Body>
       </Col>
       );
+    }
+
+    function subredditText(item) {
+      return <Card.Text>{item.subreddit_name_prefixed}</Card.Text>
     }
 
     function FileList(props) {
@@ -340,12 +352,13 @@ function isVideo(item) {
 
         export async function getServerSideProps({ query }) {
           console.log("Query:", query); // reddit?r=gonemild&video=true&limit=50
+                                        // reddit?u=queenlivia&video=true&limit=50
           let rQuery = "";
           if (Object.keys(query).length != 0) { console.log(`Er is een query met ${Object.keys(query)[0]}: ${query[Object.keys(query)[0]]}`) }
           let rReddit = String((Object.keys(query).length != 0) ? query[Object.keys(query)[0]] : "gonemild");
           let typeReddit = Object.keys(query)[0] == "u" ? "u" : "r";
-	  console.log("TypeReddit:", typeReddit);
-	  let OnlyVideo = !!(query["video"]);
+      	  console.log("TypeReddit:", typeReddit);
+      	  let OnlyVideo = !!(query["video"]);
           console.log("OnlyVideo:", OnlyVideo);
           if (Object.keys(query).length >= 2) {
             let howMuch = parseInt(query[Object.keys(query)[1]]);
@@ -363,7 +376,7 @@ function isVideo(item) {
             }
           }
           console.time("Making api call");
-	  console.log("url:",`https://api.reddit.com/${typeReddit}/${rReddit}${rQuery}`)
+	        console.log("url:",`https://api.reddit.com/${typeReddit}/${rReddit}${rQuery}`)
           // raw_json=1
           let Fdata = await fetch(`https://api.reddit.com/${typeReddit}/${rReddit}${rQuery}`, { headers: { 'User-Agent': 'nl.wittopkoning.box'}});
           if (!Fdata.ok) {
