@@ -35,11 +35,11 @@ function isVideo(item) {
       }
     }
   }
-  
+
   function handleStart(e) {
     e.target.loop = false;
   }
-  
+
   function handleDoubleClick(e) {
     console.log("EventDoubleClick:", e);
     //See if the video is playing
@@ -63,13 +63,13 @@ function isVideo(item) {
       ElementIsPlaying.wasElement = null;
     }
   }
-  
+
   function handlePause(e) {
     ElementIsPlaying.Playing = false;
     ElementIsPlaying.element = null;
     ElementIsPlaying.wasElement = e.target;
   }
-  
+
   function MakeProgressBar(e) {
     let rect = document.createElement("div");
     rect.className = "progress";
@@ -84,7 +84,7 @@ function isVideo(item) {
     bar.setAttribute("aria-valuemax", "0");
     rect.appendChild(bar);
   }
-  
+
   function handleTimeupdate(e) {
     if (e.target.parentNode.querySelectorAll('.progress > #bar').length != 1) {
       MakeProgressBar(e.target.parentNode)
@@ -94,7 +94,7 @@ function isVideo(item) {
       e.target.parentNode.querySelector('.progress > #bar').setAttribute("aria-valuenow", `${Math.round(pers)}`);
     }
   }
-  
+
   function ClickTimeLineHandler(e) {
 	console.log(e)
 	let procentVanFilmpje = e.nativeEvent.offsetX / e.target.clientWidth;
@@ -102,7 +102,7 @@ function isVideo(item) {
 	let filmpje = e.target.parentNode.parentNode.querySelector('video');
 	filmpje.currentTime = procentVanFilmpje * filmpje.duration;
   }
-  
+
   try {
     if (item.preview.hasOwnProperty('reddit_video_preview')) {
       //return <video className="card-img-top" controls  preload="auto" loop poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} width={item.preview.reddit_video_preview.width} height={item.preview.reddit_video_preview.height}>
@@ -122,28 +122,38 @@ function isVideo(item) {
         //<div className="progress" style={{height: "0.2rem"}}>
         //  <div className="progress-bar" role="progressbar" id="bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
         //</div>
+      } else if (item.url.includes("gif")) {
+        return (
+          <div>
+          <video className="card-img-top" preload="auto" poster={item.preview.images[0].source.url.replaceAll("&amp;", "&")} muted onClick={handleClick} onTimeUpdate={handleTimeupdate} onDoubleClick={handleDoubleClick} onLoadStart={handleStart} onPause={handlePause} onPlay={handlePlay}>
+          <source src={item.preview.images[0].variants.mp4.source.url.replaceAll("&amp;", "&")} />
+          Your browser does not support the video tag.
+          </video>
+          <div className="progress" style={{ height: "0.2rem" }} onClick={ClickTimeLineHandler}><div className="progress-bar" id="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"></div></div>
+          </div>
+        );
       } else {
         return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
       }
     } catch (e) {
 	console.log("HHHHHHHHHHHH, Er is hier naar de catch gegaan, dus er is iets mis met deze url:", item);
       try {
-        return <Card.Img variant="top" src={item.url.replace("&amp;", "&").replaceAll("&amp;", "&")} alt={item.alt} />;
+        return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
       } catch (e) {
-        return <Card.Img variant="top" src={item.url.replace("&amp;", "&").replaceAll("&amp;", "&")} alt={item.alt} />;
+        return <Card.Img variant="top" src={item.url.replaceAll("&amp;", "&")} alt={item.alt} />;
       }
     }
   }
-  
+
   function FileItem(props) {
     function UpVote(argv) {
       up(argv, access_token);
     }
-    
+
     function DownVote(argv) {
       down(argv, access_token);
     }
-    
+
     function KeyBoardEvent(e) {
       console.log("The KeyBoardEvent() was called", e);
       if (e.code === 'ArrowRight') {
@@ -215,14 +225,14 @@ function isVideo(item) {
         }
       }
     }
-    
-    
+
+
     /*React.useEffect(() => {
       document.addEventListener("keyup", event => {
         KeyBoardEvent(event);
       });
     }, []);*/
-    
+
     let item = props.value.data;
     console.log("Title Orginal:", item.title);
     if (!item.title) {
@@ -252,14 +262,14 @@ function isVideo(item) {
     } catch (error) {
       console.log(item)
     }
-    
-    
+
+
     /* FIXME: als thumbnails van andre websites niet meer werken dan dit gebruiken
     if (!item.is_reddit_media_domain) {
       item.url = item.thumbnail
     }
     */
-    
+
     if (item.hasOwnProperty('media_metadata')) {
       item.url = item["media_metadata"][Object.keys(item.media_metadata)[0]]["s"]["u"]
     }
@@ -279,14 +289,14 @@ function isVideo(item) {
     if (!item.title) {
       item.title = "No title"
     }
-    
+
     if (props.OnlyVideo && item.preview) {
       if (!item.preview.hasOwnProperty('reddit_video_preview')) {
         console.log(`Wanting OnlyVideo: ${props.OnlyVideo} and this is not so returning null`);
         return null;
       }
     }
-    
+
     return (
       <Col sm>
       <Board/>
@@ -294,19 +304,19 @@ function isVideo(item) {
       <Card.Body>
       <a herf={`https://www.reddit.com/user/${item.author}`}><Card.Title>{item.author}</Card.Title></a>
       <Card.Text>{item.title}</Card.Text>
-      <Button href={item.permalink} variant="primary">View {item.preview ? (item.preview.reddit_video_preview ? 'video' : 'image') : 'image'} on reddit</Button>
-      <Button onClick={UpVote} style={{ 'marginLeft':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
+      <Button href={item.permalink} variant="primary">View {item.preview ? (item.preview.reddit_video_preview ? 'video' : (item.url.includes('gif') ? 'gif' : 'image') ) : 'image'} on reddit</Button>
+      <Button onClick={UpVote} onDoubleClick={DownVote} style={{ 'marginLeft':' 5px' }} name={item.name} variant="secondary">UpVote</Button>
       </Card.Body>
       </Col>
       );
     }
-    
+
     function FileList(props) {
       console.log("Props:", props);
       let mtp = props.Rjson.filter(data => {
         return data.data.stickied !== true;
       });
-      
+
       let rows = array_chunk(mtp.slice(0, -1), 4);
       return (
         <Container fluid>
@@ -327,7 +337,7 @@ function isVideo(item) {
           </Container>
           );
         }
-        
+
         export async function getServerSideProps({ query }) {
           console.log("Query:", query); // reddit?r=gonemild&video=true&limit=50
           let rQuery = "";
@@ -379,9 +389,9 @@ function isVideo(item) {
             }
           }
         };
-        
-        
-        
+
+
+
         export default function Home(props) {
           let RList = props.Home.children;
           access_token = props.accesstoken;
@@ -415,14 +425,14 @@ function isVideo(item) {
             </>
             );
           }
-          
+
           class Board extends React.Component {
             constructor(props) {
               super(props);
-              
+
               this.handleKeyboardEvent = this.handleKeyboardEvent.bind(this);
             }
-            
+
             componentDidMount() {
               if (typeof document !== 'undefined') {
                 document.addEventListener('keydown', this.handleKeyboardEvent, false);
@@ -432,7 +442,7 @@ function isVideo(item) {
                 console.log(`typeof document == 'undefined'`);
               }
             }
-            
+
             componentWillUnmount() {
               if (typeof document !== 'undefined') {
                 document.removeEventListener('keydown', this.handleKeyboardEvent, false);
@@ -442,7 +452,7 @@ function isVideo(item) {
                 console.log(`typeof document == 'undefined'`);
               }
             }
-            
+
             handleKeyboardEvent(e) {
               //console.log(`Bonjour with event that is ${event.repeat}:`, event);
               if (e.code === 'ArrowRight') {
@@ -500,7 +510,7 @@ function isVideo(item) {
                 }
               }
             }
-            
+
             render() {
               return <p></p>;
             }

@@ -1,5 +1,5 @@
 git add .
-git commit -m "Added keyboard shortcut's"
+git commit -m "Added gif support"
 git branch -M main
 git remote add origin https://github.com/oliverwk/next-test.git
 git push -u origin main
