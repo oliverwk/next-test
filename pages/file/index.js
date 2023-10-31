@@ -29,8 +29,8 @@ export default function FirstFile() {
       <br/>
         <Bar/>
       <br />
-        <Link href="/box">
-        <a className={btn} style={{ position: "relative", margin: margin + "rem" }} >Back to home</a>
+        <Link href="/box" className={btn} style={{ position: "relative", margin: margin + "rem" }} >
+		Back to home
         </Link>
     </div>
   )

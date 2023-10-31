@@ -2,7 +2,7 @@
 import Head from 'next/head'
 import React from "react";
 import Row from "react-bootstrap/Row";
-import { up, down, GetAccesToken} from "../lib/reddit_upvote.js";
+import { up, down, GetAccesToken} from "../../lib/reddit_upvote.js";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
@@ -409,9 +409,9 @@ function isVideo(item) {
           let RList = props.Home.children;
           access_token = props.accesstoken;
           return (
-            <>
+		<>
             <Head>
-            <title>Subreddit r/{props.SubReddit}</title>
+            <title>{`Subreddit r/${props.SubReddit}`}</title>
             <meta name="viewport" content="initial-scale=1.0, width=device-width"/>
             <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
             <meta name="apple-mobile-web-app-title" content="reddit"/>
