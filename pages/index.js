@@ -13,7 +13,7 @@ function FileItem(props) {
         <img src={items.download_url} alt={items.name} className="card-img-top" style={{ padding: 10 + 'px' }} id={items.id} />
        <div className="card-body">
          <h5 className="card-title">{items.name}</h5>
-         <a href={"https://app.box.com/file/"+items.id} className="btn btn-primary">View the Image</a>
+         <Link href={"https://app.box.com/file/"+items.id} className="btn btn-primary">View the Image</Link>
         </div>
      </li>
     </div>
@@ -53,7 +53,7 @@ export default function Home(props) {
 
       <main>
         <h1 className="title">
-          Welcome to <a href="https://box.com">Box!</a>
+          Welcome to <Link href="https://box.com">Box!</Link>
         </h1>
 
         <p className="description">
@@ -64,24 +64,24 @@ export default function Home(props) {
         <FileList fileList={BList}/>
 
         <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
+          <Link href="https://nextjs.org/docs" className="card">
             <h3>Documentation &rarr;</h3>
             <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+          </Link>
 
           <div href="https://nextjs.org/docs" className="card">
             <h3>Visit &rarr;</h3>
             <p>Find in-depth information about Next.js features and API.</p>
           </div>
 
-          <a
+          <Link
             href="https://github.com/vercel/next.js/tree/master/examples"
             className="card">
             <h3>Examples &rarr;</h3>
             <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
             className="card"
           >
@@ -89,14 +89,14 @@ export default function Home(props) {
             <p>
               Instantly deploy your Next.js site to a public URL with Vercel.
             </p>
-          </a>
+          </Link>
         </div>
       </main>
 
       <footer>
       Powered by{' '}
       <Link href="/file">
-        <a> Me!</a>
+         Me!
       </Link>
       </footer>
 

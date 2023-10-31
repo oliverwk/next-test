@@ -23,8 +23,8 @@ export default function file({ file }) {
                     <h1 className={styles.detail}>
                         {file.name}
                     </h1>
-                    <Link href="/box">
-                        <a className={styles.button}>Back</a>
+                    <Link href="/box" className={styles.button}>
+			Back
                     </Link>
                 </div>
             </main>

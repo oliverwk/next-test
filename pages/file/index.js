@@ -9,10 +9,10 @@ function Bar() {
   let handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       if (e.target.value.length != 12) {
-        alert("It's need to be longer then 12 chars")
+        alert("It's need to be 12 chars long")
       } else {
         window.location = `/file/${e.target.value}`;
-      } 
+      }
     }
   }
   return (
