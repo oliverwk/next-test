@@ -9,8 +9,8 @@ function FileItem(props) {
      <div className={styles.collser}>
       <img src={items.download_url} alt={items.name} className={styles.imgs} alt={items.name} id={items.id}/>
       <h5 className={styles.name}>{ndate != "Invalid Date" ? ndate.toLocaleString("nl-nl") : items.name}</h5>
-      <Link href={"/file/" + items.id}>
-        <a className={styles.btn}>View the Image</a>
+      <Link href={"/file/" + items.id} className={styles.btn}>
+	View the Image
       </Link>
      </div>
   );
