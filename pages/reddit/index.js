@@ -467,7 +467,6 @@ function isVideo(item) {
             }
 
             handleKeyboardEvent(e) {
-              //console.log(`Bonjour with event that is ${event.repeat}:`, event);
               if (e.code === 'ArrowRight') {
                 if (ElementIsPlaying.element != null && ElementIsPlaying.Playing) {
                   if (ElementIsPlaying.element.duration >= (ElementIsPlaying.element.currentTime + 1.0)) {
